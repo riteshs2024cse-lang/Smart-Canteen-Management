@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Canteen - Quick Access</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 800px;
+            width: 100%;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+        }
+
+        .header h1 {
+            font-size: 48px;
+            background: linear-gradient(135deg, #10b981, #3b82f6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #94a3b8;
+            font-size: 18px;
+        }
+
+        .links-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 24px;
+            margin-bottom: 40px;
+        }
+
+        .link-card {
+            background: #1e293b;
+            border-radius: 16px;
+            padding: 32px;
+            text-decoration: none;
+            transition: all 0.3s ease;
+            border: 2px solid #334155;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .link-card:hover {
+            transform: translateY(-8px);
+            border-color: #10b981;
+            box-shadow: 0 12px 24px rgba(16, 185, 129, 0.2);
+        }
+
+        .link-card.admin {
+            border-color: #3b82f6;
+        }
+
+        .link-card.admin:hover {
+            border-color: #3b82f6;
+            box-shadow: 0 12px 24px rgba(59, 130, 246, 0.2);
+        }
+
+        .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+
+        .link-card.admin .icon {
+            color: #3b82f6;
+        }
+
+        .link-card.user .icon {
+            color: #10b981;
+        }
+
+        .link-card h2 {
+            color: #f1f5f9;
+            font-size: 24px;
+            margin-bottom: 12px;
+        }
+
+        .link-card p {
+            color: #94a3b8;
+            font-size: 14px;
+            line-height: 1.6;
+        }
+
+        .status {
+            background: #0f172a;
+            border-radius: 12px;
+            padding: 24px;
+            border: 1px solid #334155;
+        }
+
+        .status h3 {
+            color: #f1f5f9;
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+
+        .status-item {
+            display: flex;
+            justify-content: space-between;
+            padding: 12px;
+            margin-bottom: 8px;
+            background: #1e293b;
+            border-radius: 8px;
+        }
+
+        .status-label {
+            color: #94a3b8;
+        }
+
+        .status-value {
+            font-weight: 600;
+            margin-left: auto;
+        }
+
+        .status-value.online {
+            color: #10b981;
+        }
+
+        .status-value.offline {
+            color: #ef4444;
+        }
+
+        .badge {
+            display: inline-block;
+            background: rgba(16, 185, 129, 0.1);
+            color: #10b981;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 12px;
+            font-weight: 600;
+            margin-top: 8px;
+        }
+
+        .badge.new {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            animation: pulse 2s ease-in-out infinite;
+        }
+
+        @keyframes pulse {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0.5; }
+        }
+
+        .footer {
+            text-align: center;
+            margin-top: 40px;
+            color: #64748b;
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🌿 Smart Canteen</h1>
+            <p>AI-Powered Food Waste Management System</p>
+        </div>
+
+        <div class="links-grid">
+            <a href="http://localhost:5000" class="link-card admin" target="_blank">
+                <div class="icon">📊</div>
+                <h2>Admin Dashboard</h2>
+                <p>View analytics, manage food logs, AI predictions, bookings, and system feedback</p>
+            </a>
+
+            <a href="http://localhost:5000/booking.html" class="link-card user" target="_blank">
+                <div class="icon">🍽️</div>
+                <h2>Book Your Meal</h2>
+                <p>Pre-book your meals, view booking history, and manage your orders</p>
+                <span class="badge new">NEW</span>
+            </a>
+        </div>
+
+        <div class="status">
+            <h3>System Status</h3>
+            <div class="status-item">
+                <span class="status-label">Backend Server</span>
+                <span class="status-value online" id="backendStatus">● Online</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">AI Prediction Service</span>
+                <span class="status-value online" id="aiStatus">● Online</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Database</span>
+                <span class="status-value online">● MongoDB Atlas</span>
+            </div>
+            <div class="status-item">
+                <span class="status-label">Pre-Booking System</span>
+                <span class="status-value online">● Active (Phase 1)</span>
+            </div>
+        </div>
+
+        <div class="footer">
+            <p><strong>Available Services:</strong></p>
+            <p>📈 Dashboard | 🍔 Food Logs | 🤖 AI Predictions | 📅 Meal Booking | 💬 Feedback</p>
+            <p style="margin-top: 20px;">Built with Node.js, MongoDB, Python, and Machine Learning</p>
+        </div>
+    </div>
+
+    <script>
+        // Check backend status
+        fetch('http://localhost:5000/api')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('backendStatus').innerHTML = '● Online';
+                document.getElementById('backendStatus').classList.add('online');
+            })
+            .catch(err => {
+                document.getElementById('backendStatus').innerHTML = '● Offline';
+                document.getElementById('backendStatus').classList.remove('online');
+                document.getElementById('backendStatus').classList.add('offline');
+            });
+
+        // Check AI status
+        fetch('http://localhost:5001/')
+            .then(res => res.json())
+            .then(data => {
+                document.getElementById('aiStatus').innerHTML = '● Online';
+                document.getElementById('aiStatus').classList.add('online');
+            })
+            .catch(err => {
+                document.getElementById('aiStatus').innerHTML = '● Offline';
+                document.getElementById('aiStatus').classList.remove('online');
+                document.getElementById('aiStatus').classList.add('offline');
+            });
+    </script>
+</body>
+</html>

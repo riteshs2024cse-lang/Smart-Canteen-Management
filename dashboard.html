@@ -1,0 +1,477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Canteen Management - Dashboard</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js@4.4.0/dist/chart.umd.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios@1.6.0/dist/axios.min.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            min-height: 100vh;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+            padding: 1.5rem 2rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        }
+
+        .header h1 {
+            font-size: 1.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            padding: 2rem;
+        }
+
+        .page-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+        }
+
+        .page-title {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #111827;
+        }
+
+        .page-subtitle {
+            color: #6b7280;
+            margin-top: 0.25rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 0.75rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.3s;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .stats-card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 2px solid transparent;
+            transition: all 0.3s;
+        }
+
+        .stats-card:hover {
+            border-color: #10b981;
+            box-shadow: 0 8px 16px rgba(16, 185, 129, 0.15);
+            transform: translateY(-4px);
+        }
+
+        .stats-card-header {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 1rem;
+        }
+
+        .stats-icon {
+            width: 3rem;
+            height: 3rem;
+            background: linear-gradient(135deg, #10b981 0%, #059669 100%);
+            border-radius: 0.75rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.5rem;
+        }
+
+        .stats-value {
+            font-size: 2rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 0.5rem;
+        }
+
+        .stats-label {
+            color: #6b7280;
+            font-size: 0.875rem;
+            font-weight: 500;
+        }
+
+        .card {
+            background: white;
+            padding: 1.5rem;
+            border-radius: 1rem;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+            border: 2px solid #e5e7eb;
+            margin-bottom: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #111827;
+            margin-bottom: 1.5rem;
+        }
+
+        .charts-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(500px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: separate;
+            border-spacing: 0;
+        }
+
+        thead th {
+            background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
+            padding: 1rem;
+            text-align: left;
+            font-weight: 600;
+            color: #111827;
+            border-bottom: 2px solid #10b981;
+        }
+
+        tbody tr {
+            transition: background-color 0.2s;
+        }
+
+        tbody tr:hover {
+            background: #f9fafb;
+        }
+
+        tbody td {
+            padding: 1rem;
+            border-bottom: 1px solid #e5e7eb;
+            color: #374151;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.375rem 0.75rem;
+            border-radius: 0.5rem;
+            font-size: 0.75rem;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background: #d1fae5;
+            color: #059669;
+        }
+
+        .badge-warning {
+            background: #fef3c7;
+            color: #d97706;
+        }
+
+        .badge-danger {
+            background: #fee2e2;
+            color: #dc2626;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 3rem;
+            color: #6b7280;
+        }
+
+        .spinner {
+            border: 4px solid #e5e7eb;
+            border-top-color: #10b981;
+            border-radius: 50%;
+            width: 3rem;
+            height: 3rem;
+            animation: spin 0.8s linear infinite;
+            margin: 0 auto 1rem;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .charts-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>🌱 Smart Canteen Management System</h1>
+    </div>
+
+    <div class="container">
+        <div class="page-header">
+            <div>
+                <h2 class="page-title">Dashboard Overview</h2>
+                <p class="page-subtitle">Real-time canteen performance metrics</p>
+            </div>
+            <button class="btn btn-primary" onclick="loadData()">
+                🔄 Refresh Data
+            </button>
+        </div>
+
+        <div class="stats-grid" id="stats-grid">
+            <div class="loading">
+                <div class="spinner"></div>
+                <p>Loading dashboard data...</p>
+            </div>
+        </div>
+
+        <div class="charts-grid">
+            <div class="card">
+                <h3 class="card-title">📊 Weekly Trends</h3>
+                <canvas id="trendsChart"></canvas>
+            </div>
+
+            <div class="card">
+                <h3 class="card-title">📊 Food Item Breakdown</h3>
+                <canvas id="breakdownChart"></canvas>
+            </div>
+        </div>
+
+        <div class="card">
+            <h3 class="card-title">Food Items Analysis</h3>
+            <table id="food-table">
+                <thead>
+                    <tr>
+                        <th>Food Item</th>
+                        <th>Prepared</th>
+                        <th>Consumed</th>
+                        <th>Wasted</th>
+                        <th>Waste %</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="table-body">
+                    <tr>
+                        <td colspan="6" class="loading">Loading data...</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5000/api';
+        let trendsChart, breakdownChart;
+
+        async function loadData() {
+            try {
+                const response = await axios.get(`${API_BASE_URL}/dashboard/stats`);
+                const data = response.data.data;
+
+                renderStats(data.summary);
+                renderTable(data.foodItemBreakdown);
+                renderCharts(data.dailyTrends, data.foodItemBreakdown);
+            } catch (error) {
+                console.error('Error loading data:', error);
+                document.getElementById('stats-grid').innerHTML = `
+                    <div class="card" style="grid-column: 1 / -1;">
+                        <p style="color: #ef4444; text-align: center;">
+                            ❌ Failed to load data. Please ensure the backend server is running on port 5000.
+                        </p>
+                        <p style="text-align: center; margin-top: 1rem;">
+                            <button class="btn btn-primary" onclick="loadData()">Retry</button>
+                        </p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderStats(summary) {
+            const statsHtml = `
+                <div class="stats-card">
+                    <div class="stats-card-header">
+                        <div>
+                            <div class="stats-value">${summary.totalPrepared || 0}</div>
+                            <div class="stats-label">Total Prepared (kg)</div>
+                        </div>
+                        <div class="stats-icon">🍴</div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stats-card-header">
+                        <div>
+                            <div class="stats-value">${summary.totalConsumed || 0}</div>
+                            <div class="stats-label">Total Consumed (kg)</div>
+                        </div>
+                        <div class="stats-icon" style="background: linear-gradient(135deg, #059669 0%, #047857 100%);">👥</div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stats-card-header">
+                        <div>
+                            <div class="stats-value">${summary.totalWasted || 0}</div>
+                            <div class="stats-label">Total Wasted (kg)</div>
+                        </div>
+                        <div class="stats-icon" style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%);">📉</div>
+                    </div>
+                </div>
+
+                <div class="stats-card">
+                    <div class="stats-card-header">
+                        <div>
+                            <div class="stats-value">${(100 - (summary.wastePercentage || 0)).toFixed(1)}%</div>
+                            <div class="stats-label">Eco Score</div>
+                        </div>
+                        <div class="stats-icon" style="background: linear-gradient(135deg, #22c55e 0%, #16a34a 100%);">🍃</div>
+                    </div>
+                </div>
+            `;
+            document.getElementById('stats-grid').innerHTML = statsHtml;
+        }
+
+        function renderTable(foodItems) {
+            const tbody = document.getElementById('table-body');
+            if (!foodItems || foodItems.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6" style="text-align: center;">No data available</td></tr>';
+                return;
+            }
+
+            tbody.innerHTML = foodItems.map(item => `
+                <tr>
+                    <td style="font-weight: 600;">${item.foodItem}</td>
+                    <td>${item.totalPrepared.toFixed(1)} kg</td>
+                    <td style="color: #059669; font-weight: 600;">${item.totalConsumed.toFixed(1)} kg</td>
+                    <td style="color: #dc2626; font-weight: 600;">${item.totalWasted.toFixed(1)} kg</td>
+                    <td>${item.wastePercentage.toFixed(1)}%</td>
+                    <td>
+                        <span class="badge ${item.wastePercentage < 10 ? 'badge-success' : item.wastePercentage < 20 ? 'badge-warning' : 'badge-danger'}">
+                            ${item.wastePercentage < 10 ? 'Excellent' : item.wastePercentage < 20 ? 'Good' : 'High Waste'}
+                        </span>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function renderCharts(dailyTrends, foodItems) {
+            const trendData = dailyTrends.slice(0, 7).reverse().map(trend => ({
+                date: new Date(trend.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
+                prepared: trend.totalPrepared,
+                consumed: trend.totalConsumed,
+                wasted: trend.totalWasted
+            }));
+
+            // Trends Chart
+            const trendsCtx = document.getElementById('trendsChart').getContext('2d');
+            if (trendsChart) trendsChart.destroy();
+            trendsChart = new Chart(trendsCtx, {
+                type: 'line',
+                data: {
+                    labels: trendData.map(d => d.date),
+                    datasets: [
+                        {
+                            label: 'Prepared',
+                            data: trendData.map(d => d.prepared),
+                            borderColor: '#10b981',
+                            backgroundColor: 'rgba(16, 185, 129, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        },
+                        {
+                            label: 'Consumed',
+                            data: trendData.map(d => d.consumed),
+                            borderColor: '#059669',
+                            backgroundColor: 'rgba(5, 150, 105, 0.1)',
+                            tension: 0.4,
+                            fill: true
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+
+            // Breakdown Chart
+            const breakdownCtx = document.getElementById('breakdownChart').getContext('2d');
+            if (breakdownChart) breakdownChart.destroy();
+            breakdownChart = new Chart(breakdownCtx, {
+                type: 'bar',
+                data: {
+                    labels: foodItems.map(item => item.foodItem),
+                    datasets: [
+                        {
+                            label: 'Consumed',
+                            data: foodItems.map(item => item.totalConsumed),
+                            backgroundColor: '#10b981'
+                        },
+                        {
+                            label: 'Wasted',
+                            data: foodItems.map(item => item.totalWasted),
+                            backgroundColor: '#ef4444'
+                        }
+                    ]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: {
+                        legend: {
+                            position: 'bottom'
+                        }
+                    }
+                }
+            });
+        }
+
+        // Load data on page load
+        loadData();
+    </script>
+</body>
+</html>

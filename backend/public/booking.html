@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Canteen - Meal Booking</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/booking-styles.css">
+</head>
+<body>
+    <div class="booking-container">
+        <!-- Header -->
+        <header class="booking-header">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <h1>Smart Canteen</h1>
+            </div>
+            <p class="tagline">Pre-book your meals</p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="booking-main">
+            <!-- User Info Section -->
+            <section class="user-section">
+                <h2>Your Information</h2>
+                <form id="userInfoForm">
+                    <div class="form-group">
+                        <label>Student/Employee ID *</label>
+                        <input type="text" id="userId" required placeholder="e.g., STU12345 or EMP789">
+                    </div>
+                    <div class="form-group">
+                        <label>Full Name *</label>
+                        <input type="text" id="userName" required placeholder="Enter your full name">
+                    </div>
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Email (Optional)</label>
+                            <input type="email" id="userEmail" placeholder="your.email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Phone (Optional)</label>
+                            <input type="tel" id="userPhone" placeholder="1234567890">
+                        </div>
+                    </div>
+                </form>
+            </section>
+
+            <!-- Booking Section -->
+            <section class="booking-section">
+                <h2>Book Your Meal</h2>
+                <form id="bookingForm">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Booking Date *</label>
+                            <input type="date" id="bookingDate" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Meal Type *</label>
+                            <select id="mealType" required>
+                                <option value="">Select meal type</option>
+                                <option value="breakfast">Breakfast</option>
+                                <option value="lunch">Lunch</option>
+                                <option value="dinner">Dinner</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Select Food Items *</label>
+                        <div class="food-items-grid" id="foodItemsGrid">
+                            <div class="food-item">
+                                <input type="checkbox" id="rice" value="Rice">
+                                <label for="rice">
+                                    <i class="fas fa-bowl-rice"></i>
+                                    <span>Rice</span>
+                                </label>
+                                <input type="number" class="quantity" data-item="Rice" min="1" value="1" placeholder="Qty">
+                            </div>
+                            <div class="food-item">
+                                <input type="checkbox" id="dal" value="Dal">
+                                <label for="dal">
+                                    <i class="fas fa-bowl-food"></i>
+                                    <span>Dal</span>
+                                </label>
+                                <input type="number" class="quantity" data-item="Dal" min="1" value="1" placeholder="Qty">
+                            </div>
+                            <div class="food-item">
+                                <input type="checkbox" id="chapati" value="Chapati">
+                                <label for="chapati">
+                                    <i class="fas fa-cookie"></i>
+                                    <span>Chapati</span>
+                                </label>
+                                <input type="number" class="quantity" data-item="Chapati" min="1" value="1" placeholder="Qty">
+                            </div>
+                            <div class="food-item">
+                                <input type="checkbox" id="sabzi" value="Sabzi">
+                                <label for="sabzi">
+                                    <i class="fas fa-carrot"></i>
+                                    <span>Sabzi</span>
+                                </label>
+                                <input type="number" class="quantity" data-item="Sabzi" min="1" value="1" placeholder="Qty">
+                            </div>
+                            <div class="food-item">
+                                <input type="checkbox" id="sambar" value="Sambar">
+                                <label for="sambar">
+                                    <i class="fas fa-bowl-food"></i>
+                                    <span>Sambar</span>
+                                </label>
+                                <input type="number" class="quantity" data-item="Sambar" min="1" value="1" placeholder="Qty">
+                            </div>
+                            <div class="food-item">
+                                <input type="checkbox" id="idli" value="Idli">
+                                <label for="idli">
+                                    <i class="fas fa-circle"></i>
+                                    <span>Idli</span>
+                                </label>
+                                <input type="number" class="quantity" data-item="Idli" min="1" value="1" placeholder="Qty">
+                            </div>
+                            <div class="food-item">
+                                <input type="checkbox" id="dosa" value="Dosa">
+                                <label for="dosa">
+                                    <i class="fas fa-cookie"></i>
+                                    <span>Dosa</span>
+                                </label>
+                                <input type="number" class="quantity" data-item="Dosa" min="1" value="1" placeholder="Qty">
+                            </div>
+                            <div class="food-item">
+                                <input type="checkbox" id="poha" value="Poha">
+                                <label for="poha">
+                                    <i class="fas fa-bowl-rice"></i>
+                                    <span>Poha</span>
+                                </label>
+                                <input type="number" class="quantity" data-item="Poha" min="1" value="1" placeholder="Qty">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label>Special Requests (Optional)</label>
+                        <textarea id="specialRequests" rows="3" placeholder="Any dietary requirements or special requests..."></textarea>
+                    </div>
+
+                    <button type="submit" class="btn-submit">
+                        <i class="fas fa-check-circle"></i>
+                        Book My Meal
+                    </button>
+                </form>
+            </section>
+
+            <!-- My Bookings Section -->
+            <section class="my-bookings-section">
+                <div class="section-header">
+                    <h2>My Bookings</h2>
+                    <button class="btn-refresh" onclick="loadMyBookings()">
+                        <i class="fas fa-sync-alt"></i>
+                        Refresh
+                    </button>
+                </div>
+                <div class="bookings-list" id="bookingsList">
+                    <p class="empty-state">Enter your ID above to view your bookings</p>
+                </div>
+            </section>
+        </main>
+
+        <!-- Footer -->
+        <footer class="booking-footer">
+            <p>Smart Canteen Management System &copy; 2026</p>
+        </footer>
+    </div>
+
+    <!-- Success Modal -->
+    <div id="successModal" class="modal">
+        <div class="modal-content success">
+            <div class="modal-icon">
+                <i class="fas fa-check-circle"></i>
+            </div>
+            <h3>Booking Confirmed!</h3>
+            <p id="successMessage">Your meal has been booked successfully.</p>
+            <button onclick="closeSuccessModal()" class="btn-modal">OK</button>
+        </div>
+    </div>
+
+    <script src="/booking-app.js"></script>
+</body>
+</html>

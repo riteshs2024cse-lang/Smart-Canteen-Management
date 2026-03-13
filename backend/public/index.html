@@ -1,0 +1,510 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Canteen Management System</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/styles.css">
+</head>
+<body>
+    <!-- Sidebar Navigation -->
+    <div class="sidebar" id="sidebar">
+        <div class="sidebar-header">
+            <div class="logo">
+                <i class="fas fa-leaf"></i>
+                <div class="logo-text">
+                    <h2>Smart Canteen</h2>
+                    <p>AI-Powered System</p>
+                </div>
+            </div>
+        </div>
+
+        <nav class="sidebar-nav">
+            <a href="#" class="nav-item active" data-page="dashboard">
+                <i class="fas fa-chart-line"></i>
+                <span>Dashboard</span>
+            </a>
+            <a href="#" class="nav-item" data-page="food-logs">
+                <i class="fas fa-utensils"></i>
+                <span>Food Logs</span>
+            </a>
+            <a href="#" class="nav-item" data-page="bookings">
+                <i class="fas fa-calendar-check"></i>
+                <span>Bookings</span>
+            </a>
+            <a href="#" class="nav-item" data-page="predictions">
+                <i class="fas fa-brain"></i>
+                <span>AI Predictions</span>
+            </a>
+            <a href="#" class="nav-item" data-page="feedback">
+                <i class="fas fa-comment-dots"></i>
+                <span>Feedback</span>
+            </a>
+        </nav>
+
+        <div class="sidebar-footer">
+            <div class="eco-badge">
+                <i class="fas fa-seedling"></i>
+                <div>
+                    <p class="eco-title">Eco-Friendly</p>
+                    <p class="eco-subtitle">Reducing waste daily</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="main-content">
+        <!-- Header -->
+        <header class="header">
+            <div class="header-left">
+                <button class="menu-toggle" id="menuToggle">
+                    <i class="fas fa-bars"></i>
+                </button>
+                <h1 id="pageTitle">Dashboard</h1>
+            </div>
+            <div class="header-right">
+                <div class="ai-status">
+                    <div class="ai-status-dot"></div>
+                    <span>AI Online</span>
+                </div>
+                <div class="user-profile">
+                    <img src="https://ui-avatars.com/api/?name=Admin&background=4ade80&color=fff" alt="Admin">
+                    <span>Admin</span>
+                </div>
+            </div>
+        </header>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-page" class="page active">
+            <!-- Stats Cards -->
+            <div class="stats-grid">
+                <div class="stat-card primary">
+                    <div class="stat-icon">
+                        <i class="fas fa-bowl-rice"></i>
+                    </div>
+                    <div class="stat-content">
+                        <p class="stat-label">Total Prepared (Today)</p>
+                        <h3 class="stat-value" id="totalPrepared">Loading...</h3>
+                        <p class="stat-change" style="color: var(--gray-500); font-size: 0.875rem;"><span id="totalLogsCount">0</span> entries today</p>
+                    </div>
+                </div>
+
+                <div class="stat-card success">
+                    <div class="stat-icon">
+                        <i class="fas fa-check-circle"></i>
+                    </div>
+                    <div class="stat-content">
+                        <p class="stat-label">Total Consumed (Today)</p>
+                        <h3 class="stat-value" id="totalConsumed">Loading...</h3>
+                        <p class="stat-change" style="color: var(--gray-500); font-size: 0.875rem;">Today's consumption</p>
+                    </div>
+                </div>
+
+                <div class="stat-card warning">
+                    <div class="stat-icon">
+                        <i class="fas fa-trash-alt"></i>
+                    </div>
+                    <div class="stat-content">
+                        <p class="stat-label">Total Wasted (Today)</p>
+                        <h3 class="stat-value" id="totalWasted">Loading...</h3>
+                        <p class="stat-change" style="color: var(--gray-500); font-size: 0.875rem;">Today's waste</p>
+                    </div>
+                </div>
+
+                <div class="stat-card info">
+                    <div class="stat-icon">
+                        <i class="fas fa-percentage"></i>
+                    </div>
+                    <div class="stat-content">
+                        <p class="stat-label">Waste Percentage (Today)</p>
+                        <h3 class="stat-value" id="wastePercentage">Loading...</h3>
+                        <p class="stat-change" style="color: var(--gray-500); font-size: 0.875rem;">Today's efficiency</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Charts Section -->
+            <div class="charts-grid" style="grid-template-columns: 1fr 1fr; gap: 1.5rem; max-width: 1200px;">
+                <div class="chart-card" style="height: 350px;">
+                    <div class="chart-header">
+                        <h3>Consumption vs Waste Trend</h3>
+                    </div>
+                    <canvas id="consumptionWasteChart"></canvas>
+                </div>
+
+                <div class="chart-card" style="height: 350px;">
+                    <div class="chart-header">
+                        <h3>Food Items Distribution</h3>
+                    </div>
+                    <canvas id="foodItemsChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Food Logs Page -->
+        <div id="food-logs-page" class="page">
+            <div class="page-header">
+                <div>
+                    <h2>Food Logging Management</h2>
+                    <p>Track daily food preparation, consumption, and waste</p>
+                </div>
+                <button class="btn-primary" onclick="openAddFoodLog()">
+                    <i class="fas fa-plus"></i> Add Food Log
+                </button>
+            </div>
+
+            <div class="filters-section">
+                <div class="filter-group">
+                    <label>Date Range</label>
+                    <input type="date" id="startDate" class="filter-input">
+                    <span>to</span>
+                    <input type="date" id="endDate" class="filter-input">
+                </div>
+                <div class="filter-group">
+                    <label>Food Item</label>
+                    <select id="foodItemFilter" class="filter-input">
+                        <option value="">All Items</option>
+                    </select>
+                </div>
+                <button class="btn-secondary" onclick="applyFilters()">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+            </div>
+
+            <div class="table-container">
+                <table class="data-table" id="foodLogsTable">
+                    <thead>
+                        <tr>
+                            <th>Date</th>
+                            <th>Food Item</th>
+                            <th>Prepared (kg)</th>
+                            <th>Consumed (kg)</th>
+                            <th>Wasted (kg)</th>
+                            <th>Waste %</th>
+                            <th>Day</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="foodLogsBody">
+                        <tr>
+                            <td colspan="8" class="text-center">
+                                <div class="spinner"></div>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+        <!-- AI Predictions Page -->
+        <div id="predictions-page" class="page">
+            <div class="page-header">
+                <div>
+                    <h2>AI-Powered Demand Predictions</h2>
+                    <p>Intelligent forecasting for tomorrow's food requirements</p>
+                </div>
+                <button class="btn-primary" onclick="refreshPredictions()">
+                    <i class="fas fa-sync-alt"></i> Refresh Predictions
+                </button>
+            </div>
+
+            <div class="prediction-summary">
+                <div class="prediction-card primary">
+                    <div class="prediction-icon">
+                        <i class="fas fa-users"></i>
+                    </div>
+                    <div class="prediction-info">
+                        <p class="label">Expected Diners</p>
+                        <h2 id="expectedDiners">-</h2>
+                        <p class="sublabel">For tomorrow</p>
+                    </div>
+                </div>
+
+                <div class="prediction-card success">
+                    <div class="prediction-icon">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="prediction-info">
+                        <p class="label">Recommended Quantity</p>
+                        <h2 id="recommendedQty">-</h2>
+                        <p class="sublabel">Total food (kg)</p>
+                    </div>
+                </div>
+
+                <div class="prediction-card warning">
+                    <div class="prediction-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="prediction-info">
+                        <p class="label">Waste Risk Score</p>
+                        <h2 id="wasteRisk">-</h2>
+                        <p class="sublabel">Risk assessment</p>
+                    </div>
+                </div>
+
+                <div class="prediction-card info">
+                    <div class="prediction-icon">
+                        <i class="fas fa-brain"></i>
+                    </div>
+                    <div class="prediction-info">
+                        <p class="label">AI Confidence</p>
+                        <h2 id="aiConfidence">-</h2>
+                        <p class="sublabel">Prediction accuracy</p>
+                    </div>
+                </div>
+            </div>
+
+            <div class="food-predictions">
+                <h3>Food Item Predictions</h3>
+                <div class="predictions-grid" id="foodPredictionsGrid">
+                    <div class="prediction-loader">
+                        <div class="spinner"></div>
+                        <p>Generating AI predictions...</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Historical Data Section -->
+            <div class="historical-data" style="margin-top: 3rem;">
+                <h3 style="margin-bottom: 1.5rem;">Historical Food Data (Last 30 Days)</h3>
+                <div class="table-container">
+                    <table class="data-table" id="historicalDataTable">
+                        <thead>
+                            <tr>
+                                <th>Food Item</th>
+                                <th>Total Prepared (kg)</th>
+                                <th>Total Consumed (kg)</th>
+                                <th>Total Wasted (kg)</th>
+                                <th>Average Waste %</th>
+                                <th>Trend</th>
+                            </tr>
+                        </thead>
+                        <tbody id="historicalDataBody">
+                            <tr>
+                                <td colspan="6" class="text-center">
+                                    <div class="spinner"></div>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+
+
+        <!-- Bookings Page -->
+        <div id="bookings-page" class="page">
+            <div class="page-header">
+                <div>
+                    <h2>Meal Bookings</h2>
+                    <p>Manage pre-booked meals from users</p>
+                </div>
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <span id="bookingStatusLabel" style="font-weight: 500; color: var(--gray-700);">Pre-booking System:</span>
+                    <label class="toggle-switch">
+                        <input type="checkbox" id="bookingToggle" checked>
+                        <span class="toggle-slider"></span>
+                    </label>
+                    <span id="bookingStatusText" style="font-weight: 600; color: var(--success);">Enabled</span>
+                </div>
+            </div>
+
+            <!-- Booking Stats -->
+            <div class="stats-grid" style="grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));">
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #3b82f6, #2563eb);">
+                        <i class="fas fa-clock"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-label">Today's Bookings</p>
+                        <h3 class="stat-value" id="todayBookings">0</h3>
+                        <p class="stat-sublabel" style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.25rem;" id="todayDate"></p>
+                    </div>
+                </div>
+                <div class="stat-card">
+                    <div class="stat-icon" style="background: linear-gradient(135deg, #f59e0b, #d97706);">
+                        <i class="fas fa-utensils"></i>
+                    </div>
+                    <div class="stat-info">
+                        <p class="stat-label">Expected Diners Today</p>
+                        <h3 class="stat-value" id="bookingExpectedDiners">0</h3>
+                        <p class="stat-sublabel" style="font-size: 0.75rem; color: var(--gray-500); margin-top: 0.25rem;">Confirmed meals</p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Filters -->
+            <div class="filters-card" style="margin-top: 1.5rem;">
+                <div class="filters-grid">
+                    <div class="form-group">
+                        <label>Date</label>
+                        <input type="date" id="bookingFilterDate" class="form-input" placeholder="All dates">
+                    </div>
+                    <div class="form-group">
+                        <label>Meal Type</label>
+                        <select id="bookingFilterMeal" class="form-input">
+                            <option value="">All Meals</option>
+                            <option value="breakfast">Breakfast</option>
+                            <option value="lunch">Lunch</option>
+                            <option value="dinner">Dinner</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>Status</label>
+                        <select id="bookingFilterStatus" class="form-input">
+                            <option value="">All Status</option>
+                            <option value="confirmed">Confirmed</option>
+                            <option value="cancelled">Cancelled</option>
+                            <option value="completed">Completed</option>
+                        </select>
+                    </div>
+                    <div class="form-group">
+                        <label>User ID</label>
+                        <input type="text" id="bookingFilterUser" class="form-input" placeholder="Search by ID">
+                    </div>
+                </div>
+                <button class="btn-primary" onclick="applyBookingFilters()">
+                    <i class="fas fa-filter"></i> Apply Filters
+                </button>
+            </div>
+
+            <!-- Bookings Table -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <div class="card-header">
+                    <h3>All Bookings</h3>
+                    <button class="btn-secondary" onclick="loadBookingsData()">
+                        <i class="fas fa-sync-alt"></i> Refresh
+                    </button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>User ID</th>
+                                <th>Name</th>
+                                <th>Date</th>
+                                <th>Meal Type</th>
+                                <th>Food Items</th>
+                                <th>Status</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="bookingsTableBody">
+                            <tr>
+                                <td colspan="7" style="text-align: center; padding: 2rem;">
+                                    Loading bookings...
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <!-- Feedback Page -->
+        <div id="feedback-page" class="page">
+            <div class="page-header">
+                <div>
+                    <h2>System Feedback</h2>
+                    <p>User feedback for developers about the Smart Canteen system</p>
+                </div>
+            </div>
+
+            <div class="feedback-container">
+                <div class="feedback-form-card">
+                    <form id="feedbackForm">
+                        <div class="form-group">
+                            <label>Your Name</label>
+                            <input type="text" id="feedbackName" required class="form-input" placeholder="Enter your name">
+                        </div>
+                        <div class="form-group">
+                            <label>Email (optional)</label>
+                            <input type="email" id="feedbackEmail" class="form-input" placeholder="your.email@example.com">
+                        </div>
+                        <div class="form-group">
+                            <label>Feedback Type</label>
+                            <select id="feedbackType" required class="form-input">
+                                <option value="">Select type...</option>
+                                <option value="bug">Bug Report</option>
+                                <option value="feature">Feature Request</option>
+                                <option value="improvement">System Improvement</option>
+                                <option value="usability">Usability Issue</option>
+                                <option value="general">General Feedback</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Your Feedback</label>
+                            <textarea id="feedbackMessage" required class="form-input" rows="8" placeholder="Share your experience with the system, report bugs, or suggest new features..."></textarea>
+                        </div>
+                        <button type="submit" class="btn-primary" style="width: 100%;">
+                            <i class="fas fa-paper-plane"></i> Submit Feedback
+                        </button>
+                    </form>
+                </div>
+
+                <div class="feedback-submitted" id="feedbackList" style="margin-top: 2rem;">
+                    <h3 style="margin-bottom: 1rem;">Recent Feedback</h3>
+                    <div id="feedbackItems">
+                        <p style="text-align: center; color: var(--gray-500); padding: 2rem;">No feedback submitted yet</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Add Food Log Modal -->
+    <div id="addFoodLogModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Add New Food Log</h3>
+                <button class="modal-close" onclick="closeModal()">&times;</button>
+            </div>
+            <form id="addFoodLogForm">
+                <div class="form-group">
+                    <label>Date</label>
+                    <input type="date" id="logDate" required class="form-input">
+                </div>
+                <div class="form-group">
+                    <label>Food Item</label>
+                    <input type="text" id="logFoodItem" required class="form-input" placeholder="e.g., Rice, Dal, Chapati">
+                </div>
+                <div class="form-grid">
+                    <div class="form-group">
+                        <label>Prepared Quantity (kg)</label>
+                        <input type="number" id="logPrepared" required class="form-input" min="0" step="0.1">
+                    </div>
+                    <div class="form-group">
+                        <label>Consumed Quantity (kg)</label>
+                        <input type="number" id="logConsumed" required class="form-input" min="0" step="0.1">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label>Day of Week</label>
+                    <select id="logDayOfWeek" required class="form-input">
+                        <option value="Monday">Monday</option>
+                        <option value="Tuesday">Tuesday</option>
+                        <option value="Wednesday">Wednesday</option>
+                        <option value="Thursday">Thursday</option>
+                        <option value="Friday">Friday</option>
+                        <option value="Saturday">Saturday</option>
+                        <option value="Sunday">Sunday</option>
+                    </select>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn-secondary" onclick="closeModal()">Cancel</button>
+                    <button type="submit" class="btn-primary">
+                        <i class="fas fa-save"></i> Save Food Log
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script src="/app.js"></script>
+</body>
+</html>
