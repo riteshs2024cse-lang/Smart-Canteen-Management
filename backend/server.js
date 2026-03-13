@@ -9,6 +9,8 @@ const foodRoutes = require('./routes/foodRoutes');
 const dashboardRoutes = require('./routes/dashboardRoutes');
 const bookingRoutes = require('./routes/bookingRoutes');
 const bookingSettingsRoutes = require('./routes/bookingSettingsRoutes');
+const authRoutes = require('./routes/authRoutes');
+const { ensureDefaultAdmin } = require('./controllers/authController');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -24,7 +26,7 @@ app.use(express.static(path.join(__dirname, 'public')));
 
 // Base route - serve HTML dashboard
 app.get("/", (req, res) => {
-  res.sendFile(path.join(__dirname, 'public', 'index.html'));
+  res.sendFile(path.join(__dirname, 'public', 'auth.html'));
 });
 
 // API info route
@@ -47,6 +49,7 @@ app.use('/api/food-log', foodRoutes);
 app.use('/api/dashboard', dashboardRoutes);
 app.use('/api/bookings', bookingRoutes);
 app.use('/api/booking-settings', bookingSettingsRoutes);
+app.use('/api/auth', authRoutes);
 
 // Demand prediction endpoint
 app.get('/api/predict-demand', async (req, res, next) => {
@@ -67,9 +70,12 @@ app.use(errorHandler);
 
 // MongoDB connection
 mongoose.connect(
-"mongodb://admin:admin123@ac-sk9nyft-shard-00-00.iicfbwa.mongodb.net:27017,ac-sk9nyft-shard-00-01.iicfbwa.mongodb.net:27017,ac-sk9nyft-shard-00-02.iicfbwa.mongodb.net:27017/?ssl=true&replicaSet=atlas-8qcoji-shard-0&authSource=admin&retryWrites=true&w=majority&appName=smart-canteen-cluster"
+process.env.MONGO_URI
 )
-.then(() => console.log("✅ MongoDB Connected Successfully"))
+.then(async () => {
+  console.log("✅ MongoDB Connected Successfully");
+  await ensureDefaultAdmin();
+})
 .catch(err => {
   console.error("❌ MongoDB Connection Error:", err);
   process.exit(1);

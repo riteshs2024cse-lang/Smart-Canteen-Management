@@ -17,17 +17,38 @@
                 <h1>Smart Canteen</h1>
             </div>
             <p class="tagline">Pre-book your meals</p>
+            <div class="booking-header-actions">
+                <span id="loggedInUserLabel"></span>
+                <button id="logoutBtn" class="btn-view-bookings" type="button">
+                    <i class="fas fa-sign-out-alt"></i>
+                    Logout
+                </button>
+            </div>
         </header>
 
         <!-- Main Content -->
         <main class="booking-main">
+            <section class="ai-assistant-panel" id="bookingAIPanel">
+                <div class="ai-assistant-header">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Assistant</span>
+                </div>
+                <p id="bookingAITip" class="ai-assistant-text">Syncing meal recommendations...</p>
+            </section>
+
             <!-- User Info Section -->
             <section class="user-section">
                 <h2>Your Information</h2>
                 <form id="userInfoForm">
                     <div class="form-group">
                         <label>Student/Employee ID *</label>
-                        <input type="text" id="userId" required placeholder="e.g., STU12345 or EMP789">
+                        <div class="user-id-row">
+                            <input type="text" id="userId" required placeholder="e.g., STU12345 or EMP789">
+                            <button type="button" id="viewBookingsBtn" class="btn-view-bookings">
+                                <i class="fas fa-search"></i>
+                                View My Bookings
+                            </button>
+                        </div>
                     </div>
                     <div class="form-group">
                         <label>Full Name *</label>
@@ -181,6 +202,7 @@
         </div>
     </div>
 
+    <script src="/auth.js"></script>
     <script src="/booking-app.js"></script>
 </body>
 </html>

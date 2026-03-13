@@ -2,9 +2,34 @@
 
 const API_BASE = '/api';
 let charts = {};
+let aiTipInterval = null;
+
+function getAuthHeaders(extraHeaders = {}) {
+    if (!window.Auth) {
+        return extraHeaders;
+    }
+    return window.Auth.getAuthHeaders(extraHeaders);
+}
 
 // Initialize application
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
+    const user = await window.Auth.requireRole('admin');
+    if (!user) {
+        return;
+    }
+
+    initAdminAIAssistant();
+
+    const userNameEl = document.getElementById('headerUserName');
+    if (userNameEl) {
+        userNameEl.textContent = user.name || 'Admin';
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => window.Auth.logout());
+    }
+
     initNavigation();
     initMenuToggle();
     initFormHandlers();
@@ -43,9 +68,10 @@ function navigateTo(pageName) {
         'food-logs': 'Food Logs',
         'bookings': 'Meal Bookings',
         'predictions': 'AI Predictions',
-        'feedback': 'Feedback'
+        'feedback': 'Developer Requests'
     };
     document.getElementById('pageTitle').textContent = titles[pageName];
+    updateAdminAITip(pageName);
     
     // Load page data
     switch(pageName) {
@@ -68,6 +94,58 @@ function navigateTo(pageName) {
             loadFeedback();
             break;
     }
+}
+
+function initAdminAIAssistant() {
+    updateAdminAITip('dashboard');
+}
+
+function updateAdminAITip(pageName) {
+    const tipElement = document.getElementById('adminAITip');
+    if (!tipElement) {
+        return;
+    }
+
+    const pageTips = {
+        dashboard: [
+            'Monitoring live prep, consumption, and waste efficiency.',
+            'Use trend cards to detect sudden demand shifts quickly.',
+            'AI highlights where operational optimization is needed.'
+        ],
+        'food-logs': [
+            'Capture daily logs accurately to improve prediction quality.',
+            'Consistent food-item naming helps cleaner analytics results.',
+            'Lower variance in logs improves AI confidence scores.'
+        ],
+        bookings: [
+            'Review booking counts to align kitchen preparation plans.',
+            'Filter by meal and status to spot cancellation patterns.',
+            'Booking signals improve tomorrow demand forecasts.'
+        ],
+        predictions: [
+            'AI forecast blends recent usage and historical behavior.',
+            'Compare risk score against prepared quantity before dispatch.',
+            'Adjust menu plans early to reduce waste percentage.'
+        ],
+        feedback: [
+            'Capture feature requests clearly for faster implementation.',
+            'Use concise titles to help developers prioritize correctly.',
+            'Operational pain points make the best improvement tickets.'
+        ]
+    };
+
+    const tips = pageTips[pageName] || pageTips.dashboard;
+    let tipIndex = 0;
+    tipElement.textContent = tips[tipIndex];
+
+    if (aiTipInterval) {
+        clearInterval(aiTipInterval);
+    }
+
+    aiTipInterval = setInterval(() => {
+        tipIndex = (tipIndex + 1) % tips.length;
+        tipElement.textContent = tips[tipIndex];
+    }, 3500);
 }
 
 // Menu Toggle for Mobile
@@ -467,7 +545,7 @@ function initFormHandlers() {
             feedbacks.unshift(feedbackData);
             localStorage.setItem('feedbacks', JSON.stringify(feedbacks));
             
-            showSuccess('Thank you for your feedback!');
+            showSuccess('Request sent to developers successfully!');
             feedbackForm.reset();
             loadFeedback();
         });
@@ -537,7 +615,9 @@ async function loadBookingsData() {
         tbody.innerHTML = '<tr><td colspan="7" style="text-align: center; padding: 2rem;">Loading bookings...</td></tr>';
 
         const filters = buildBookingFilters();
-        const response = await fetch(`${API_BASE}/bookings${filters}`);
+        const response = await fetch(`${API_BASE}/bookings${filters}`, {
+            headers: getAuthHeaders()
+        });
         const result = await response.json();
 
         if (result.success && result.data.length > 0) {
@@ -554,7 +634,9 @@ async function loadBookingsData() {
 
 async function loadBookingStats() {
     try {
-        const response = await fetch(`${API_BASE}/bookings/stats`);
+        const response = await fetch(`${API_BASE}/bookings/stats`, {
+            headers: getAuthHeaders()
+        });
         const result = await response.json();
 
         if (result.success) {
@@ -657,7 +739,8 @@ async function adminCancelBooking(bookingId) {
 
     try {
         const response = await fetch(`${API_BASE}/bookings/${bookingId}/cancel`, {
-            method: 'PUT'
+            method: 'PUT',
+            headers: getAuthHeaders()
         });
 
         const result = await response.json();
@@ -781,7 +864,7 @@ function loadFeedback() {
             </div>
         `).join('');
     } else {
-        container.innerHTML = '<p style="text-align: center; color: var(--gray-500); padding: 2rem;">No feedback submitted yet</p>';
+        container.innerHTML = '<p style="text-align: center; color: var(--gray-500); padding: 2rem;">No management requests submitted yet</p>';
     }
 }
 

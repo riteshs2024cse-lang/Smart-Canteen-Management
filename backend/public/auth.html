@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Smart Canteen - Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="/auth-styles.css">
+</head>
+<body>
+    <div class="auth-container">
+        <div class="auth-header">
+            <h1><i class="fas fa-leaf"></i> Smart Canteen</h1>
+            <p>Access Management Portal</p>
+        </div>
+
+        <section class="auth-card single-auth-card">
+            <h2 id="authTitle">Login</h2>
+            <div class="ai-assistant-panel" id="authAIPanel">
+                <div class="ai-assistant-header">
+                    <i class="fas fa-robot"></i>
+                    <span>AI Assistant</span>
+                </div>
+                <p id="authAITip" class="ai-assistant-text">Preparing secure access guidance...</p>
+            </div>
+            <div class="auth-switch" id="authSwitch">
+                <button type="button" id="modeLogin" class="switch-btn active">LOGIN</button>
+                <button type="button" id="modeRegister" class="switch-btn">REGISTER</button>
+            </div>
+
+            <form id="authForm">
+                <div class="form-group register-only" style="display: none;">
+                    <label>Student/Employee ID</label>
+                    <input type="text" id="authUserId" placeholder="e.g., STU12345">
+                </div>
+                <div class="form-group register-only" style="display: none;">
+                    <label>Full Name</label>
+                    <input type="text" id="authName" placeholder="Enter full name">
+                </div>
+                <div class="form-group">
+                    <label>Email</label>
+                    <input type="email" id="authEmail" required placeholder="Email">
+                </div>
+                <div class="form-group register-only" style="display: none;">
+                    <label>Phone Number</label>
+                    <input type="tel" id="authPhone" placeholder="9876543210">
+                </div>
+                <div class="form-group">
+                    <label>Password</label>
+                    <input type="password" id="authPassword" minlength="6" required placeholder="Password">
+                </div>
+                <div class="login-only auth-row" id="loginExtras">
+                    <label><input type="checkbox" id="rememberMe"> Remember me</label>
+                    <button type="button" id="forgotPasswordToggle" class="link-btn">Forgot Password?</button>
+                </div>
+                <button type="submit" class="btn-primary" id="authSubmitBtn">Login</button>
+            </form>
+
+            <div id="forgotPasswordPanel" class="forgot-panel" style="display: none;">
+                <h3>Reset Password with OTP</h3>
+                <form id="forgotPasswordForm">
+                    <div class="form-group">
+                        <label>Phone Number</label>
+                        <input type="tel" id="forgotPhone" required placeholder="Enter your registered phone number">
+                    </div>
+                    <button type="submit" class="btn-secondary">Get OTP</button>
+                </form>
+
+                <form id="resetPasswordForm" style="margin-top: 12px;">
+                    <div class="form-group">
+                        <label>OTP</label>
+                        <input type="text" id="resetCode" required placeholder="6-digit OTP" maxlength="6">
+                    </div>
+                    <div class="form-group">
+                        <label>New Password</label>
+                        <input type="password" id="newPassword" minlength="6" required placeholder="Enter new password">
+                    </div>
+                    <button type="submit" class="btn-primary">Reset Password</button>
+                </form>
+            </div>
+        </section>
+    </div>
+
+    <script src="/auth.js"></script>
+    <script src="/auth-app.js"></script>
+</body>
+</html>

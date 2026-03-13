@@ -73,10 +73,19 @@
                 </div>
                 <div class="user-profile">
                     <img src="https://ui-avatars.com/api/?name=Admin&background=4ade80&color=fff" alt="Admin">
-                    <span>Admin</span>
+                    <span id="headerUserName">Admin</span>
                 </div>
+                <button id="logoutBtn" class="btn-secondary" style="padding: 8px 12px;">Logout</button>
             </div>
         </header>
+
+        <section class="ai-assistant-panel" id="adminAIPanel">
+            <div class="ai-assistant-header">
+                <i class="fas fa-robot"></i>
+                <span>AI Assistant</span>
+            </div>
+            <p id="adminAITip" class="ai-assistant-text">Analyzing canteen operations and preparing insights...</p>
+        </section>
 
         <!-- Dashboard Page -->
         <div id="dashboard-page" class="page active">
@@ -410,8 +419,8 @@
         <div id="feedback-page" class="page">
             <div class="page-header">
                 <div>
-                    <h2>System Feedback</h2>
-                    <p>User feedback for developers about the Smart Canteen system</p>
+                    <h2>Developer Change Requests</h2>
+                    <p>Submit change/addition requests from canteen management to the development team</p>
                 </div>
             </div>
 
@@ -419,38 +428,39 @@
                 <div class="feedback-form-card">
                     <form id="feedbackForm">
                         <div class="form-group">
-                            <label>Your Name</label>
-                            <input type="text" id="feedbackName" required class="form-input" placeholder="Enter your name">
+                            <label>Canteen Manager Name</label>
+                            <input type="text" id="feedbackName" required class="form-input" placeholder="Enter manager name">
                         </div>
                         <div class="form-group">
-                            <label>Email (optional)</label>
-                            <input type="email" id="feedbackEmail" class="form-input" placeholder="your.email@example.com">
+                            <label>Manager Email (optional)</label>
+                            <input type="email" id="feedbackEmail" class="form-input" placeholder="manager.email@example.com">
                         </div>
                         <div class="form-group">
-                            <label>Feedback Type</label>
+                            <label>Request Type</label>
                             <select id="feedbackType" required class="form-input">
-                                <option value="">Select type...</option>
-                                <option value="bug">Bug Report</option>
-                                <option value="feature">Feature Request</option>
-                                <option value="improvement">System Improvement</option>
-                                <option value="usability">Usability Issue</option>
-                                <option value="general">General Feedback</option>
+                                <option value="">Select request type...</option>
+                                <option value="feature-addition">Feature Addition</option>
+                                <option value="feature-change">Feature Change</option>
+                                <option value="ui-update">UI/UX Update</option>
+                                <option value="workflow-change">Workflow Change</option>
+                                <option value="bug-fix">Bug Fix Request</option>
+                                <option value="other">Other Developer Request</option>
                             </select>
                         </div>
                         <div class="form-group">
-                            <label>Your Feedback</label>
-                            <textarea id="feedbackMessage" required class="form-input" rows="8" placeholder="Share your experience with the system, report bugs, or suggest new features..."></textarea>
+                            <label>Request Details</label>
+                            <textarea id="feedbackMessage" required class="form-input" rows="8" placeholder="Describe the required change/addition, expected behavior, and priority for the developers..."></textarea>
                         </div>
                         <button type="submit" class="btn-primary" style="width: 100%;">
-                            <i class="fas fa-paper-plane"></i> Submit Feedback
+                            <i class="fas fa-paper-plane"></i> Send Request to Developers
                         </button>
                     </form>
                 </div>
 
                 <div class="feedback-submitted" id="feedbackList" style="margin-top: 2rem;">
-                    <h3 style="margin-bottom: 1rem;">Recent Feedback</h3>
+                    <h3 style="margin-bottom: 1rem;">Recent Management Requests</h3>
                     <div id="feedbackItems">
-                        <p style="text-align: center; color: var(--gray-500); padding: 2rem;">No feedback submitted yet</p>
+                        <p style="text-align: center; color: var(--gray-500); padding: 2rem;">No management requests submitted yet</p>
                     </div>
                 </div>
             </div>
@@ -505,6 +515,7 @@
         </div>
     </div>
 
+    <script src="/auth.js"></script>
     <script src="/app.js"></script>
 </body>
 </html>

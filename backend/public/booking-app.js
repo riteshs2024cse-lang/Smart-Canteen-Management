@@ -1,8 +1,34 @@
 // API Base URL
 const API_URL = 'http://localhost:5000/api';
 
+function getAuthHeaders(extraHeaders = {}) {
+    if (!window.Auth) {
+        return extraHeaders;
+    }
+    return window.Auth.getAuthHeaders(extraHeaders);
+}
+
 // Initialize
-document.addEventListener('DOMContentLoaded', () => {
+document.addEventListener('DOMContentLoaded', async () => {
+    initBookingAIAssistant();
+
+    const user = await window.Auth.requireRole('user');
+    if (!user) {
+        return;
+    }
+
+    prefillUserProfile(user);
+
+    const loggedInUserLabel = document.getElementById('loggedInUserLabel');
+    if (loggedInUserLabel) {
+        loggedInUserLabel.textContent = `${user.name} (${user.userId})`;
+    }
+
+    const logoutBtn = document.getElementById('logoutBtn');
+    if (logoutBtn) {
+        logoutBtn.addEventListener('click', () => window.Auth.logout());
+    }
+
     // Check if booking system is enabled
     checkBookingStatus();
 
@@ -20,8 +46,17 @@ document.addEventListener('DOMContentLoaded', () => {
     // Form submission handlers
     document.getElementById('bookingForm').addEventListener('submit', handleBookingSubmit);
     
-    // Load bookings when user ID changes
-    document.getElementById('userId').addEventListener('blur', loadMyBookings);
+    // Load bookings when user clicks view or presses Enter in ID field
+    const userIdInput = document.getElementById('userId');
+    const viewBookingsBtn = document.getElementById('viewBookingsBtn');
+    userIdInput.addEventListener('blur', loadMyBookings);
+    userIdInput.addEventListener('keydown', (e) => {
+        if (e.key === 'Enter') {
+            e.preventDefault();
+            loadMyBookings();
+        }
+    });
+    viewBookingsBtn.addEventListener('click', loadMyBookings);
 
     // Enable/disable quantity inputs based on checkbox
     document.querySelectorAll('.food-item input[type="checkbox"]').forEach(checkbox => {
@@ -34,7 +69,45 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     });
+
+    loadMyBookings();
 });
+
+function initBookingAIAssistant() {
+    const tipElement = document.getElementById('bookingAITip');
+    if (!tipElement) {
+        return;
+    }
+
+    const tips = [
+        'Tip: Choose meal type first, then select food items for faster booking.',
+        'Tip: Keep your profile details updated for smoother confirmations.',
+        'Tip: Use View My Bookings to track and cancel upcoming meals instantly.'
+    ];
+
+    let tipIndex = 0;
+    setInterval(() => {
+        tipIndex = (tipIndex + 1) % tips.length;
+        tipElement.textContent = tips[tipIndex];
+    }, 3500);
+}
+
+function prefillUserProfile(user) {
+    const userIdEl = document.getElementById('userId');
+    const userNameEl = document.getElementById('userName');
+    const userEmailEl = document.getElementById('userEmail');
+    const userPhoneEl = document.getElementById('userPhone');
+
+    userIdEl.value = user.userId || '';
+    userNameEl.value = user.name || '';
+    userEmailEl.value = user.email || '';
+    userPhoneEl.value = user.phone || '';
+
+    userIdEl.readOnly = true;
+    userNameEl.readOnly = true;
+    userEmailEl.readOnly = true;
+    userPhoneEl.readOnly = true;
+}
 
 // Check booking system status
 async function checkBookingStatus() {
@@ -165,7 +238,9 @@ async function handleBookingSubmit(e) {
         const response = await fetch(`${API_URL}/bookings`, {
             method: 'POST',
             headers: {
-                'Content-Type': 'application/json'
+                ...getAuthHeaders({
+                    'Content-Type': 'application/json'
+                })
             },
             body: JSON.stringify(bookingData)
         });
@@ -220,13 +295,15 @@ async function loadMyBookings() {
     try {
         bookingsList.innerHTML = '<p class="empty-state"><i class="fas fa-spinner fa-spin"></i> Loading bookings...</p>';
 
-        const response = await fetch(`${API_URL}/bookings?userId=${userId}`);
+        const response = await fetch(`${API_URL}/bookings/user/${encodeURIComponent(userId)}`, {
+            headers: getAuthHeaders()
+        });
         const result = await response.json();
 
         if (response.ok && result.data && result.data.length > 0) {
             bookingsList.innerHTML = result.data.map(booking => createBookingCard(booking)).join('');
         } else {
-            bookingsList.innerHTML = '<p class="empty-state">No bookings found</p>';
+            bookingsList.innerHTML = `<p class="empty-state">No bookings found for ID: <strong>${userId}</strong></p>`;
         }
     } catch (error) {
         console.error('Error loading bookings:', error);
@@ -287,7 +364,8 @@ async function cancelBooking(bookingId) {
 
     try {
         const response = await fetch(`${API_URL}/bookings/${bookingId}/cancel`, {
-            method: 'PUT'
+            method: 'PUT',
+            headers: getAuthHeaders()
         });
 
         const result = await response.json();

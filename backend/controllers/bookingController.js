@@ -15,7 +15,14 @@ exports.createBooking = async (req, res, next) => {
       });
     }
 
-    const { userId, userName, userEmail, userPhone, bookingDate, mealType, foodItems, specialRequests } = req.body;
+    let { userId, userName, userEmail, userPhone, bookingDate, mealType, foodItems, specialRequests } = req.body;
+
+    if (req.user && req.user.role === 'user') {
+      userId = req.user.userId;
+      userName = req.user.name;
+      userEmail = req.user.email;
+      userPhone = req.user.phone;
+    }
 
     // Validation
     if (!userId || !userName || !bookingDate || !mealType || !foodItems || foodItems.length === 0) {
@@ -119,6 +126,40 @@ exports.getAllBookings = async (req, res, next) => {
   }
 };
 
+// @desc    Get bookings by user ID
+// @route   GET /api/bookings/user/:userId
+// @access  Public
+exports.getBookingsByUserId = async (req, res, next) => {
+  try {
+    const userId = (req.params.userId || '').trim();
+
+    if (!userId) {
+      return res.status(400).json({
+        success: false,
+        message: 'User ID is required'
+      });
+    }
+
+    if (req.user && req.user.role === 'user' && req.user.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only view your own bookings'
+      });
+    }
+
+    const bookings = await Booking.find({ userId })
+      .sort({ bookingDate: -1, bookingTime: -1 });
+
+    res.status(200).json({
+      success: true,
+      count: bookings.length,
+      data: bookings
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // @desc    Get booking by ID
 // @route   GET /api/bookings/:id
 // @access  Public
@@ -153,6 +194,13 @@ exports.cancelBooking = async (req, res, next) => {
       return res.status(404).json({
         success: false,
         message: 'Booking not found'
+      });
+    }
+
+    if (req.user && req.user.role === 'user' && req.user.userId !== booking.userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only cancel your own bookings'
       });
     }
 
