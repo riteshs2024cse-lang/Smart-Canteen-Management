@@ -9,6 +9,42 @@ const api = axios.create({
   },
 });
 
+const AUTH_STORAGE_KEY = 'smart_canteen_auth';
+
+const getStoredAuth = () => {
+  try {
+    const raw = localStorage.getItem(AUTH_STORAGE_KEY);
+    return raw ? JSON.parse(raw) : null;
+  } catch {
+    return null;
+  }
+};
+
+api.interceptors.request.use((config) => {
+  const auth = getStoredAuth();
+  const token = auth?.token;
+
+  if (token) {
+    config.headers = config.headers || {};
+    config.headers.Authorization = `Bearer ${token}`;
+  }
+
+  return config;
+});
+
+// Auth APIs
+export const authAPI = {
+  login: (email, password) => api.post('/auth/login', { email, password }),
+  register: (payload) => api.post('/auth/register', payload),
+  me: () => api.get('/auth/me'),
+  forgotPassword: (phone) => api.post('/auth/forgot-password', { phone }),
+  resetPassword: (phone, code, newPassword) => api.post('/auth/reset-password', {
+    phone,
+    code,
+    newPassword
+  }),
+};
+
 // Food Log APIs
 export const foodLogAPI = {
   // Get all food logs
@@ -42,7 +78,23 @@ export const dashboardAPI = {
 // Prediction APIs
 export const predictionAPI = {
   // Get AI demand prediction
-  getPrediction: () => api.get('/predict-demand'),
+  getPrediction: (date) => api.get('/predict-demand', { params: date ? { date } : {} }),
+};
+
+// Booking APIs
+export const bookingAPI = {
+  create: (data) => api.post('/bookings', data),
+  getByUser: (userId) => api.get(`/bookings/user/${encodeURIComponent(userId)}`),
+  cancel: (id) => api.put(`/bookings/${id}/cancel`),
+  getAll: (params = {}) => api.get('/bookings', { params }),
+  getStats: (params = {}) => api.get('/bookings/stats', { params }),
+};
+
+// Booking settings APIs
+export const bookingSettingsAPI = {
+  get: () => api.get('/booking-settings'),
+  update: (data) => api.put('/booking-settings', data),
+  toggle: () => api.post('/booking-settings/toggle'),
 };
 
 // Error handler

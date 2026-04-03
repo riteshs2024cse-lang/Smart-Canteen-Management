@@ -1,6 +1,6 @@
 .analytics {
-  padding: 2rem;
-  max-width: 1400px;
+  padding: 0;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
@@ -118,7 +118,7 @@
 
 @media (max-width: 768px) {
   .analytics {
-    padding: 1rem;
+    padding: 0;
   }
 
   .page-header {

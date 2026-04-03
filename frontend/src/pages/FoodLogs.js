@@ -5,8 +5,6 @@ import {
   Trash2, 
   X, 
   Save,
-  Calendar,
-  Filter,
   Search,
   RefreshCw
 } from 'lucide-react';
@@ -160,13 +158,13 @@ function FoodLogs() {
             <table className="data-table">
               <thead>
                 <tr>
-                  <th>Date</th>
-                  <th>Food Item</th>
-                  <th>Prepared</th>
-                  <th>Consumed</th>
-                  <th>Wasted</th>
-                  <th>Waste %</th>
-                  <th>Actions</th>
+                  <th className="col-date">Date</th>
+                  <th className="col-item">Food Item</th>
+                  <th className="col-number">Prepared</th>
+                  <th className="col-number">Consumed</th>
+                  <th className="col-number">Wasted</th>
+                  <th className="col-waste">Waste %</th>
+                  <th className="col-actions">Actions</th>
                 </tr>
               </thead>
               <tbody>
@@ -179,17 +177,17 @@ function FoodLogs() {
                     const wastePercent = ((log.wastedQty / log.preparedQty) * 100).toFixed(1);
                     return (
                       <tr key={log._id}>
-                        <td>{new Date(log.date).toLocaleDateString()}</td>
-                        <td className="font-semibold">{log.foodItem}</td>
-                        <td>{log.preparedQty}</td>
-                        <td className="text-green">{log.consumedQty}</td>
-                        <td className="text-red">{log.wastedQty}</td>
-                        <td>
+                        <td className="col-date">{new Date(log.date).toLocaleDateString()}</td>
+                        <td className="font-semibold col-item">{log.foodItem}</td>
+                        <td className="col-number">{log.preparedQty}</td>
+                        <td className="text-green col-number">{log.consumedQty}</td>
+                        <td className="text-red col-number">{log.wastedQty}</td>
+                        <td className="col-waste">
                           <span className={`badge ${wastePercent < 10 ? 'badge-success' : wastePercent < 20 ? 'badge-warning' : 'badge-danger'}`}>
                             {wastePercent}%
                           </span>
                         </td>
-                        <td>
+                        <td className="col-actions">
                           <div className="action-buttons">
                             <button
                               className="btn-icon btn-icon-edit"

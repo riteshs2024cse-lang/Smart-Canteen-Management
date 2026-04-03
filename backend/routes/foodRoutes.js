@@ -7,6 +7,9 @@ const {
   updateFoodLog,
   deleteFoodLog
 } = require('../controllers/foodController');
+const { protect, authorize } = require('../middleware/auth');
+
+router.use(protect, authorize('admin'));
 
 // Food log routes
 router.post('/', createFoodLog);

@@ -39,19 +39,24 @@ function Analytics() {
   const fetchAnalytics = async () => {
     try {
       setLoading(true);
-      const [wasteRes, trendsRes] = await Promise.all([
+      const [wasteRes, trendsRes, statsRes] = await Promise.all([
         dashboardAPI.getWasteAnalysis(),
-        dashboardAPI.getWeeklyTrends()
+        dashboardAPI.getWeeklyTrends(),
+        dashboardAPI.getStats()
       ]);
 
       setWasteAnalysis(wasteRes.data);
-      
-      const trendData = trendsRes.data.map(trend => ({
+
+      const weeklyData = Array.isArray(trendsRes?.data) ? trendsRes.data : [];
+      const statsDailyData = Array.isArray(statsRes?.data?.dailyTrends) ? statsRes.data.dailyTrends : [];
+      const sourceTrends = weeklyData.length > 0 ? weeklyData : statsDailyData;
+
+      const trendData = sourceTrends.map(trend => ({
         date: new Date(trend.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
         prepared: trend.totalPrepared,
         consumed: trend.totalConsumed,
         wasted: trend.totalWasted,
-        wastePercent: ((trend.totalWasted / trend.totalPrepared) * 100).toFixed(1)
+        wastePercent: trend.totalPrepared > 0 ? ((trend.totalWasted / trend.totalPrepared) * 100).toFixed(1) : '0.0'
       }));
       setWeeklyTrends(trendData.reverse());
     } catch (err) {

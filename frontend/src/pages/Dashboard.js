@@ -9,11 +9,9 @@ import {
   BarChart3,
   RefreshCw
 } from 'lucide-react';
-import { AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
+import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { dashboardAPI } from '../services/api';
 import './Dashboard.css';
-
-const COLORS = ['#10b981', '#059669', '#22c55e', '#16a34a'];
 
 function Dashboard() {
   const [stats, setStats] = useState(null);

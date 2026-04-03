@@ -11,6 +11,7 @@ const bookingRoutes = require('./routes/bookingRoutes');
 const bookingSettingsRoutes = require('./routes/bookingSettingsRoutes');
 const authRoutes = require('./routes/authRoutes');
 const { ensureDefaultAdmin } = require('./controllers/authController');
+const { protect, authorize } = require('./middleware/auth');
 
 // Import middleware
 const errorHandler = require('./middleware/errorHandler');
@@ -52,7 +53,7 @@ app.use('/api/booking-settings', bookingSettingsRoutes);
 app.use('/api/auth', authRoutes);
 
 // Demand prediction endpoint
-app.get('/api/predict-demand', async (req, res, next) => {
+app.get('/api/predict-demand', protect, authorize('admin'), async (req, res, next) => {
   try {
     const predictionService = require('./services/predictionService');
     const prediction = await predictionService.predictDemand();

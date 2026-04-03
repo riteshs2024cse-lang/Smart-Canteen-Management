@@ -1,6 +1,6 @@
 .dashboard {
-  padding: 2rem;
-  max-width: 1400px;
+  padding: 0;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
@@ -131,13 +131,13 @@
   overflow-x: auto;
 }
 
-.data-table {
+.dashboard .data-table {
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
 }
 
-.data-table thead th {
+.dashboard .data-table thead th {
   background: linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%);
   padding: 1rem;
   text-align: left;
@@ -146,20 +146,20 @@
   border-bottom: 2px solid #10b981;
 }
 
-.data-table thead th:first-child {
+.dashboard .data-table thead th:first-child {
   border-radius: 0.5rem 0 0 0;
 }
 
-.data-table thead th:last-child {
+.dashboard .data-table thead th:last-child {
   border-radius: 0 0.5rem 0 0;
 }
 
-.data-table tbody tr {
+.dashboard .data-table tbody tr {
   transition: all 0.3s ease;
   position: relative;
 }
 
-.data-table tbody tr::before {
+.dashboard .data-table tbody tr::before {
   content: '';
   position: absolute;
   left: 0;
@@ -171,42 +171,42 @@
   transition: transform 0.3s ease;
 }
 
-.data-table tbody tr:hover {
+.dashboard .data-table tbody tr:hover {
   background: linear-gradient(90deg, #f0fdf4 0%, #ffffff 100%);
   transform: scale(1.01);
   box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
 }
 
-.data-table tbody tr:hover::before {
+.dashboard .data-table tbody tr:hover::before {
   transform: scaleY(1);
 }
 
-.data-table tbody td {
+.dashboard .data-table tbody td {
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   color: #374151;
 }
 
-.data-table tbody tr:last-child td {
+.dashboard .data-table tbody tr:last-child td {
   border-bottom: none;
 }
 
-.font-semibold {
+.dashboard .font-semibold {
   font-weight: 600;
   color: #111827;
 }
 
-.text-green {
+.dashboard .text-green {
   color: #059669;
   font-weight: 600;
 }
 
-.text-red {
+.dashboard .text-red {
   color: #dc2626;
   font-weight: 600;
 }
 
-.badge {
+.dashboard .badge {
   display: inline-block;
   padding: 0.375rem 0.75rem;
   border-radius: 0.5rem;
@@ -214,17 +214,17 @@
   font-weight: 600;
 }
 
-.badge-success {
+.dashboard .badge-success {
   background: #d1fae5;
   color: #059669;
 }
 
-.badge-warning {
+.dashboard .badge-warning {
   background: #fef3c7;
   color: #d97706;
 }
 
-.badge-danger {
+.dashboard .badge-danger {
   background: #fee2e2;
   color: #dc2626;
 }
@@ -265,7 +265,7 @@
 
 @media (max-width: 768px) {
   .dashboard {
-    padding: 1rem;
+    padding: 0;
   }
 
   .page-header {

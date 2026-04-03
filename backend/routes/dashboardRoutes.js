@@ -5,6 +5,9 @@ const {
   getWasteAnalysis
 } = require('../controllers/dashboardController');
 const predictionService = require('../services/predictionService');
+const { protect, authorize } = require('../middleware/auth');
+
+router.use(protect, authorize('admin'));
 
 // Dashboard routes
 router.get('/', getDashboardStats);

@@ -174,6 +174,13 @@ exports.getBookingById = async (req, res, next) => {
       });
     }
 
+    if (req.user && req.user.role === 'user' && req.user.userId !== booking.userId) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only view your own bookings'
+      });
+    }
+
     res.status(200).json({
       success: true,
       data: booking

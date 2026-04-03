@@ -1,6 +1,6 @@
 .food-logs {
-  padding: 2rem;
-  max-width: 1400px;
+  padding: 0;
+  max-width: 1240px;
   margin: 0 auto;
 }
 
@@ -71,6 +71,46 @@
 .action-buttons {
   display: flex;
   gap: 0.5rem;
+}
+
+.food-logs .data-table .col-number,
+.food-logs .data-table .col-waste,
+.food-logs .data-table .col-actions {
+  text-align: left;
+}
+
+.food-logs .data-table .col-date {
+  white-space: nowrap;
+  width: 150px;
+}
+
+.food-logs .data-table .col-item {
+  width: 220px;
+}
+
+.food-logs .data-table .col-number,
+.food-logs .data-table .col-waste,
+.food-logs .data-table .col-actions {
+  width: 110px;
+}
+
+.food-logs .data-table {
+  table-layout: fixed;
+}
+
+.food-logs .data-table thead th,
+.food-logs .data-table tbody td {
+  padding-left: 0.75rem;
+  padding-right: 0.75rem;
+}
+
+.food-logs .data-table .col-actions .action-buttons {
+  justify-content: flex-start;
+}
+
+.food-logs .data-table .col-waste .badge {
+  min-width: 64px;
+  justify-content: flex-start;
 }
 
 .btn-icon {
@@ -242,7 +282,7 @@
 
 @media (max-width: 768px) {
   .food-logs {
-    padding: 1rem;
+    padding: 0;
   }
 
   .page-header {

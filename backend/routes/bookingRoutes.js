@@ -11,11 +11,11 @@ const {
 const { protect, authorize } = require('../middleware/auth');
 
 // Booking routes
-router.post('/', protect, authorize('user', 'admin'), createBooking);
+router.post('/', protect, authorize('admin', 'user'), createBooking);
 router.get('/', protect, authorize('admin'), getAllBookings);
 router.get('/stats', protect, authorize('admin'), getBookingStats);
-router.get('/user/:userId', protect, authorize('user', 'admin'), getBookingsByUserId);
-router.get('/:id', protect, authorize('admin'), getBookingById);
-router.put('/:id/cancel', protect, authorize('user', 'admin'), cancelBooking);
+router.get('/user/:userId', protect, authorize('admin', 'user'), getBookingsByUserId);
+router.get('/:id', protect, authorize('admin', 'user'), getBookingById);
+router.put('/:id/cancel', protect, authorize('admin', 'user'), cancelBooking);
 
 module.exports = router;

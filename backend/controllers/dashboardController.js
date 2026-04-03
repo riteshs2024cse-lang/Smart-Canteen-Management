@@ -161,6 +161,8 @@ exports.getWasteAnalysis = async (req, res, next) => {
       {
         $group: {
           _id: '$foodItem',
+          totalPrepared: { $sum: '$preparedQty' },
+          totalConsumed: { $sum: '$consumedQty' },
           avgWasted: { $avg: '$wastedQty' },
           maxWasted: { $max: '$wastedQty' },
           minWasted: { $min: '$wastedQty' },
@@ -172,11 +174,25 @@ exports.getWasteAnalysis = async (req, res, next) => {
         $project: {
           foodItem: '$_id',
           _id: 0,
+          totalPrepared: 1,
+          totalConsumed: 1,
           avgWasted: { $round: ['$avgWasted', 2] },
           maxWasted: 1,
           minWasted: 1,
           totalWasted: 1,
-          occurrences: 1
+          occurrences: 1,
+          wastePercentage: {
+            $cond: {
+              if: { $eq: ['$totalPrepared', 0] },
+              then: 0,
+              else: {
+                $multiply: [
+                  { $divide: ['$totalWasted', '$totalPrepared'] },
+                  100
+                ]
+              }
+            }
+          }
         }
       },
       { $sort: { totalWasted: -1 } }
