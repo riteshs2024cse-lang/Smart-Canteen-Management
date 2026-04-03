@@ -135,6 +135,7 @@
   width: 100%;
   border-collapse: separate;
   border-spacing: 0;
+  table-layout: fixed;
 }
 
 .dashboard .data-table thead th {
@@ -155,36 +156,39 @@
 }
 
 .dashboard .data-table tbody tr {
-  transition: all 0.3s ease;
-  position: relative;
-}
-
-.dashboard .data-table tbody tr::before {
-  content: '';
-  position: absolute;
-  left: 0;
-  top: 0;
-  height: 100%;
-  width: 4px;
-  background: linear-gradient(135deg, #10b981 0%, #059669 100%);
-  transform: scaleY(0);
-  transition: transform 0.3s ease;
+  transition: background 0.2s ease;
 }
 
 .dashboard .data-table tbody tr:hover {
   background: linear-gradient(90deg, #f0fdf4 0%, #ffffff 100%);
-  transform: scale(1.01);
-  box-shadow: 0 2px 8px rgba(16, 185, 129, 0.1);
-}
-
-.dashboard .data-table tbody tr:hover::before {
-  transform: scaleY(1);
 }
 
 .dashboard .data-table tbody td {
   padding: 1rem;
   border-bottom: 1px solid #e5e7eb;
   color: #374151;
+  vertical-align: middle;
+}
+
+.dashboard .data-table th:nth-child(1),
+.dashboard .data-table td:nth-child(1) {
+  width: 22%;
+}
+
+.dashboard .data-table th:nth-child(2),
+.dashboard .data-table td:nth-child(2),
+.dashboard .data-table th:nth-child(3),
+.dashboard .data-table td:nth-child(3),
+.dashboard .data-table th:nth-child(4),
+.dashboard .data-table td:nth-child(4),
+.dashboard .data-table th:nth-child(5),
+.dashboard .data-table td:nth-child(5) {
+  width: 14%;
+}
+
+.dashboard .data-table th:nth-child(6),
+.dashboard .data-table td:nth-child(6) {
+  width: 18%;
 }
 
 .dashboard .data-table tbody tr:last-child td {

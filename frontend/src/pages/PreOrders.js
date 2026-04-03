@@ -166,13 +166,14 @@ function PreOrders() {
                   <th>User</th>
                   <th>Date</th>
                   <th>Meal</th>
+                  <th>Items</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {recentBookings.length === 0 ? (
                   <tr>
-                    <td colSpan="4" className="text-center">No bookings yet.</td>
+                    <td colSpan="5" className="text-center">No bookings yet.</td>
                   </tr>
                 ) : (
                   recentBookings.map((booking) => (
@@ -180,6 +181,7 @@ function PreOrders() {
                       <td>{booking.userName}</td>
                       <td>{new Date(booking.bookingDate).toLocaleDateString()}</td>
                       <td className="capitalize">{booking.mealType}</td>
+                      <td>{booking.foodItems?.map((item) => item.name).join(', ') || '-'}</td>
                       <td>
                         <span className={`badge ${booking.status === 'confirmed' ? 'badge-success' : 'badge-warning'}`}>
                           {booking.status}
