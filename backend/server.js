@@ -56,7 +56,7 @@ app.use('/api/auth', authRoutes);
 app.get('/api/predict-demand', protect, authorize('admin'), async (req, res, next) => {
   try {
     const predictionService = require('./services/predictionService');
-    const prediction = await predictionService.predictDemand();
+    const prediction = await predictionService.predictDemand(req.query.date);
     res.status(200).json({
       success: true,
       data: prediction

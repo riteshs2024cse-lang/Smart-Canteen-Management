@@ -55,6 +55,27 @@
   box-shadow: 0 0 0 3px rgba(22, 163, 74, 0.12);
 }
 
+.password-field {
+  position: relative;
+}
+
+.password-field input {
+  padding-right: 4.8rem;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 0.45rem;
+  top: 50%;
+  transform: translateY(-50%);
+  border: none;
+  background: transparent;
+  color: #166534;
+  font-weight: 700;
+  cursor: pointer;
+  padding: 0.2rem 0.35rem;
+}
+
 .auth-actions {
   margin-top: 0.25rem;
   display: flex;

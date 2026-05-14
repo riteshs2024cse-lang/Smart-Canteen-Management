@@ -146,6 +146,114 @@ select:focus {
   gap: 0.85rem;
 }
 
+.available-items-section {
+  display: grid;
+  gap: 0.8rem;
+}
+
+.available-items-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.available-item-card {
+  background: linear-gradient(180deg, #ffffff 0%, #f7fbf8 100%);
+  border: 1px solid #d5ead8;
+  border-radius: 0.95rem;
+  padding: 0.85rem;
+  display: grid;
+  gap: 0.75rem;
+  box-shadow: 0 10px 24px rgba(22, 58, 43, 0.05);
+  transition: transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+}
+
+.available-item-card.selected {
+  border-color: #16a34a;
+  box-shadow: 0 14px 32px rgba(22, 163, 74, 0.14);
+  transform: translateY(-1px);
+}
+
+.available-item-toggle {
+  display: flex;
+  gap: 0.7rem;
+  align-items: flex-start;
+  cursor: pointer;
+}
+
+.available-item-toggle input {
+  width: 1rem;
+  height: 1rem;
+  margin-top: 0.2rem;
+  accent-color: #16a34a;
+}
+
+.available-item-toggle span {
+  display: grid;
+  gap: 0.2rem;
+}
+
+.available-item-toggle strong {
+  color: #163a2b;
+  font-size: 0.96rem;
+}
+
+.available-item-toggle small {
+  color: #5a7264;
+  font-size: 0.8rem;
+  line-height: 1.35;
+}
+
+.available-item-actions label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.82rem;
+  color: #405c49;
+  font-weight: 600;
+}
+
+.available-item-actions input {
+  width: 100%;
+  border: 1px solid #cfe0cc;
+  border-radius: 0.75rem;
+  padding: 0.6rem 0.75rem;
+  background: #ffffff;
+}
+
+.available-item-actions input:disabled {
+  background: #f3f7f4;
+  color: #8aa095;
+}
+
+.selection-summary {
+  display: grid;
+  gap: 0.5rem;
+}
+
+.selection-chip-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+}
+
+.selection-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  background: #d1fae5;
+  color: #065f46;
+  border: 1px solid #a7f3d0;
+  border-radius: 999px;
+  padding: 0.35rem 0.7rem;
+  font-size: 0.82rem;
+  font-weight: 700;
+}
+
+.selection-empty {
+  color: #6b7280;
+  font-size: 0.85rem;
+}
+
 .user-grid > .card:nth-child(1),
 .user-grid > .card:nth-child(2) {
   grid-column: span 6;
@@ -197,6 +305,10 @@ select:focus {
 
   .form-grid,
   .kpi-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .available-items-grid {
     grid-template-columns: 1fr;
   }
 

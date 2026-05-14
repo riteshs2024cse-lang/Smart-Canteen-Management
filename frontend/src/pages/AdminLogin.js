@@ -8,6 +8,7 @@ function AdminLogin() {
   const navigate = useNavigate();
   const [email, setEmail] = useState('admin@canteen.local');
   const [password, setPassword] = useState('admin123');
+  const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState('');
 
@@ -48,7 +49,22 @@ function AdminLogin() {
 
           <label>
             Password
-            <input type="password" value={password} onChange={(e) => setPassword(e.target.value)} required />
+            <div className="password-field">
+              <input
+                type={showPassword ? 'text' : 'password'}
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                required
+              />
+              <button
+                type="button"
+                className="password-toggle"
+                onClick={() => setShowPassword((prev) => !prev)}
+                aria-label={showPassword ? 'Hide password' : 'Show password'}
+              >
+                {showPassword ? 'Hide' : 'Show'}
+              </button>
+            </div>
           </label>
 
           {error && <p className="auth-error">{error}</p>}

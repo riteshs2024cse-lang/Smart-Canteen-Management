@@ -11,22 +11,63 @@
   --text-main: #1e2a23;
   --text-sub: #4e6255;
   --danger: #dc2626;
+  --theme-bg:
+    radial-gradient(circle at 8% 2%, rgba(111, 229, 165, 0.28), transparent 28%),
+    radial-gradient(circle at 88% 20%, rgba(169, 243, 198, 0.22), transparent 34%),
+    linear-gradient(135deg, #edf8ef 0%, #f9fcf7 55%, #f1fbf4 100%);
+  --header-bg: rgba(255, 255, 255, 0.84);
+  --header-line: rgba(35, 94, 66, 0.14);
+  --sidebar-bg: linear-gradient(180deg, #fbfffb, #f2fbf3);
+  --sidebar-line: rgba(35, 94, 66, 0.1);
+  --content-text: #1e2a23;
+  --card-bg: linear-gradient(180deg, #ffffff 0%, #fbfffb 100%);
+  --card-line: #d8e8d9;
+  --table-head-bg: #f4fbf5;
+  --table-head-line: #c9e5d1;
+  --table-row-line: #ebf3eb;
+  --table-row-hover: #f8fcf8;
+  --secondary-btn-bg: #ecf8ee;
+  --secondary-btn-text: #1e5f3e;
+  --secondary-btn-line: #b7dec1;
+}
+
+[data-theme='dark'] {
+  --theme-bg:
+    radial-gradient(circle at 12% 10%, rgba(33, 95, 70, 0.35), transparent 30%),
+    radial-gradient(circle at 82% 18%, rgba(20, 67, 49, 0.4), transparent 32%),
+    linear-gradient(140deg, #0d1713 0%, #111e18 45%, #12231b 100%);
+  --header-bg: rgba(17, 30, 24, 0.86);
+  --header-line: rgba(129, 171, 151, 0.22);
+  --sidebar-bg: linear-gradient(180deg, #14241c, #102018);
+  --sidebar-line: rgba(138, 179, 159, 0.2);
+  --content-text: #e6f6ec;
+  --text-main: #e6f6ec;
+  --text-sub: #9eb7aa;
+  --pine-900: #dff7e8;
+  --pine-700: #8fd5ae;
+  --card-bg: linear-gradient(180deg, #1a2c23 0%, #16271f 100%);
+  --card-line: #2d4a3b;
+  --table-head-bg: #1c3127;
+  --table-head-line: #2a4939;
+  --table-row-line: #274335;
+  --table-row-hover: #1e362b;
+  --secondary-btn-bg: #1a3228;
+  --secondary-btn-text: #c8f1da;
+  --secondary-btn-line: #2f5a45;
 }
 
 .app {
   display: flex;
   flex-direction: column;
   min-height: 100vh;
-  background:
-    radial-gradient(circle at 8% 2%, rgba(111, 229, 165, 0.28), transparent 28%),
-    radial-gradient(circle at 88% 20%, rgba(169, 243, 198, 0.22), transparent 34%),
-    linear-gradient(135deg, #edf8ef 0%, #f9fcf7 55%, #f1fbf4 100%);
+  background: var(--theme-bg);
+  color: var(--content-text);
 }
 
 .header {
-  background: rgba(255, 255, 255, 0.84);
+  background: var(--header-bg);
   backdrop-filter: blur(14px);
-  border-bottom: 1px solid rgba(35, 94, 66, 0.14);
+  border-bottom: 1px solid var(--header-line);
   box-shadow: 0 14px 40px rgba(13, 41, 28, 0.08);
   padding: 0.95rem 1.4rem;
   display: flex;
@@ -109,8 +150,8 @@
 .sidebar {
   width: 262px;
   flex-shrink: 0;
-  background: linear-gradient(180deg, #fbfffb, #f2fbf3);
-  border-right: 1px solid rgba(35, 94, 66, 0.1);
+  background: var(--sidebar-bg);
+  border-right: 1px solid var(--sidebar-line);
   box-shadow: inset -1px 0 0 rgba(255, 255, 255, 0.5);
   transition: transform 0.25s ease;
   overflow-y: auto;
@@ -186,8 +227,8 @@
 }
 
 .card {
-  background: linear-gradient(180deg, #ffffff 0%, #fbfffb 100%);
-  border: 1px solid #d8e8d9;
+  background: var(--card-bg);
+  border: 1px solid var(--card-line);
   border-radius: 1rem;
   box-shadow: 0 12px 30px rgba(18, 50, 33, 0.08);
   padding: 1.1rem;
@@ -234,9 +275,29 @@
 }
 
 .btn-secondary {
-  color: #1e5f3e;
-  background: #ecf8ee;
-  border: 1px solid #b7dec1;
+  color: var(--secondary-btn-text);
+  background: var(--secondary-btn-bg);
+  border: 1px solid var(--secondary-btn-line);
+}
+
+.theme-toggle {
+  border: 1px solid var(--secondary-btn-line);
+  color: var(--secondary-btn-text);
+  background: var(--secondary-btn-bg);
+  border-radius: 999px;
+  padding: 0.48rem 0.8rem;
+  font-size: 0.84rem;
+  font-weight: 700;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.theme-toggle:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 10px 22px rgba(20, 141, 88, 0.2);
 }
 
 .btn:disabled {
@@ -256,21 +317,21 @@
 .data-table thead th {
   text-align: left;
   padding: 0.85rem;
-  color: #173425;
+  color: var(--text-main);
   font-size: 0.85rem;
-  border-bottom: 2px solid #c9e5d1;
-  background: #f4fbf5;
+  border-bottom: 2px solid var(--table-head-line);
+  background: var(--table-head-bg);
 }
 
 .data-table tbody td {
   padding: 0.82rem;
-  border-bottom: 1px solid #ebf3eb;
-  color: #27362f;
+  border-bottom: 1px solid var(--table-row-line);
+  color: var(--content-text);
   vertical-align: middle;
 }
 
 .data-table tbody tr:hover {
-  background: #f8fcf8;
+  background: var(--table-row-hover);
 }
 
 .badge {
@@ -499,5 +560,73 @@
 .skeleton-card {
   height: 200px;
   width: 100%;
+}
+
+/* Dark theme overrides for page-specific hardcoded colors */
+[data-theme='dark'] .dashboard .page-title,
+[data-theme='dark'] .analytics .page-title,
+[data-theme='dark'] .predictions .page-title,
+[data-theme='dark'] .food-logs .page-title,
+[data-theme='dark'] .pre-orders .page-title {
+  color: #ecfdf3;
+}
+
+[data-theme='dark'] .dashboard .page-subtitle,
+[data-theme='dark'] .analytics .page-subtitle,
+[data-theme='dark'] .predictions .page-subtitle,
+[data-theme='dark'] .food-logs .page-subtitle,
+[data-theme='dark'] .pre-orders .page-subtitle {
+  color: #b5cfc1;
+}
+
+[data-theme='dark'] .stats-card,
+[data-theme='dark'] .summary-card {
+  background: linear-gradient(160deg, #1a2f25 0%, #16281f 100%);
+  border-color: #2f4c3d;
+}
+
+[data-theme='dark'] .stats-value,
+[data-theme='dark'] .stats-label,
+[data-theme='dark'] .summary-label,
+[data-theme='dark'] .summary-value {
+  color: #e7f7ed;
+}
+
+[data-theme='dark'] .dashboard .data-table thead th {
+  background: linear-gradient(135deg, #1f3a2d 0%, #214332 100%);
+  color: #ecfdf3;
+  border-bottom-color: #3f7d5c;
+}
+
+[data-theme='dark'] .dashboard .data-table tbody td {
+  color: #d4eadf;
+  border-bottom-color: #305040;
+}
+
+[data-theme='dark'] .dashboard .font-semibold {
+  color: #eefef4;
+}
+
+[data-theme='dark'] .dashboard .data-table tbody tr:hover {
+  background: linear-gradient(90deg, #1b3328 0%, #1f3a2d 100%);
+}
+
+[data-theme='dark'] .analytics .performance-bar {
+  background: #2a4135;
+}
+
+[data-theme='dark'] .analytics .performance-bar span {
+  color: #f0fff5;
+}
+
+[data-theme='dark'] .recharts-cartesian-axis-tick-value,
+[data-theme='dark'] .recharts-legend-item-text,
+[data-theme='dark'] .recharts-label {
+  fill: #d7efe2 !important;
+  color: #d7efe2 !important;
+}
+
+[data-theme='dark'] .recharts-cartesian-grid line {
+  stroke: #355746;
 }
 

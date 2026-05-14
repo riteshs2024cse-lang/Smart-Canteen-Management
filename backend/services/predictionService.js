@@ -58,17 +58,29 @@ async function callAIModel(itemsData) {
   }
 }
 
+function parseTargetDate(dateInput) {
+  if (dateInput) {
+    const parsed = new Date(dateInput);
+    if (!Number.isNaN(parsed.getTime())) {
+      return parsed;
+    }
+  }
+
+  const fallback = new Date();
+  fallback.setDate(fallback.getDate() + 1);
+  return fallback;
+}
+
 /**
  * Prepare data from MongoDB for AI model
  * @param {Array} logs - Food logs from database
  * @returns {Object} Formatted data for AI model
  */
-function formatDataForAI(logs) {
+function formatDataForAI(logs, targetDate) {
   const itemsData = {};
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
+  const predictionDate = targetDate || parseTargetDate();
   const dayNames = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'];
-  const dayOfWeek = dayNames[tomorrow.getDay()];
+  const dayOfWeek = dayNames[predictionDate.getDay()];
 
   // Group logs by food item
   const itemLogs = {};
@@ -95,8 +107,8 @@ function formatDataForAI(logs) {
     const avgWasteRatio = totalPrepared > 0 ? totalWasted / totalPrepared : 0.1;
     
     // Calculate day-of-week average
-    const tomorrowDayNum = tomorrow.getDay();
-    const sameDayLogs = itemLogsArray.filter(log => new Date(log.date).getDay() === tomorrowDayNum);
+    const targetDayNum = predictionDate.getDay();
+    const sameDayLogs = itemLogsArray.filter(log => new Date(log.date).getDay() === targetDayNum);
     const dayAvg = sameDayLogs.length > 0
       ? sameDayLogs.reduce((sum, log) => sum + log.consumedQty, 0) / sameDayLogs.length
       : totalConsumed / itemLogsArray.length;
@@ -118,7 +130,7 @@ function formatDataForAI(logs) {
  * @param {Array} logs - Food logs from database
  * @returns {Object} Statistical prediction results
  */
-async function statisticalPrediction(logs) {
+async function statisticalPrediction(logs, targetDate) {
   // Calculate daily consumption statistics
   const dailyStats = {};
   const dayOfWeekStats = {
@@ -147,14 +159,13 @@ async function statisticalPrediction(logs) {
   const dailyConsumption = Object.values(dailyStats).map(day => day.totalConsumed);
   const avgDailyConsumption = dailyConsumption.reduce((a, b) => a + b, 0) / dailyConsumption.length;
 
-  // Predict for tomorrow
-  const tomorrow = new Date();
-  tomorrow.setDate(tomorrow.getDate() + 1);
-  const tomorrowDayOfWeek = tomorrow.getDay();
+  // Predict for selected target date (defaults to tomorrow)
+  const predictionDate = targetDate || parseTargetDate();
+  const targetDayOfWeek = predictionDate.getDay();
 
-  const tomorrowDayData = dayOfWeekStats[tomorrowDayOfWeek];
-  const avgForTomorrowDay = tomorrowDayData.length > 0
-    ? tomorrowDayData.reduce((a, b) => a + b, 0) / tomorrowDayData.length
+  const targetDayData = dayOfWeekStats[targetDayOfWeek];
+  const avgForTargetDay = targetDayData.length > 0
+    ? targetDayData.reduce((a, b) => a + b, 0) / targetDayData.length
     : avgDailyConsumption;
 
   // Find peak day
@@ -168,66 +179,94 @@ async function statisticalPrediction(logs) {
   
   const peakDay = dayAverages.reduce((max, day) => day.avg > max.avg ? day : max, dayAverages[0]);
 
-  const expectedDiners = Math.round(avgForTomorrowDay);
-  const recommendedFoodQuantity = Math.round(avgForTomorrowDay * 1.1);
+  const expectedDiners = Math.round(avgForTargetDay);
+  const recommendedFoodQuantity = Math.round(avgForTargetDay * 1.1);
   const confidence = Math.min(95, (logs.length / 30) * 100);
+  const avgWastePercentage = calculateAvgWastePercentage(dailyStats);
+  const wasteRiskScore = Math.max(0, Math.min(1, avgWastePercentage / 100));
 
-  // Food item specific predictions
-  const thirtyDaysAgo = new Date();
-  thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-  
-  const foodItemPredictions = await FoodLog.aggregate([
-    { $match: { date: { $gte: thirtyDaysAgo } } },
-    {
-      $group: {
-        _id: '$foodItem',
-        avgConsumed: { $avg: '$consumedQty' },
-        avgWasted: { $avg: '$wastedQty' },
-        count: { $sum: 1 }
-      }
-    },
-    {
-      $project: {
-        foodItem: '$_id',
-        _id: 0,
-        recommendedQty: {
-          $round: [{ $multiply: ['$avgConsumed', 1.1] }, 0]
-        },
-        avgWasted: { $round: ['$avgWasted', 2] },
-        frequency: '$count'
-      }
-    },
-    { $sort: { frequency: -1 } }
-  ]);
+  // Food item specific predictions from current log set
+  const groupedItems = logs.reduce((acc, log) => {
+    if (!acc[log.foodItem]) {
+      acc[log.foodItem] = {
+        totalConsumed: 0,
+        totalWasted: 0,
+        count: 0
+      };
+    }
+
+    acc[log.foodItem].totalConsumed += log.consumedQty;
+    acc[log.foodItem].totalWasted += log.wastedQty;
+    acc[log.foodItem].count += 1;
+    return acc;
+  }, {});
+
+  const foodItemPredictions = Object.entries(groupedItems)
+    .map(([foodItem, itemStats]) => {
+      const avgConsumed = itemStats.totalConsumed / itemStats.count;
+      const avgWasted = itemStats.totalWasted / itemStats.count;
+      const wasteRisk = avgConsumed > 0 ? Math.min(1, avgWasted / avgConsumed) : 0;
+
+      return {
+        foodItem,
+        recommendedQty: Math.round(avgConsumed * 1.1),
+        predictedConsumption: Math.round(avgConsumed * 100) / 100,
+        avgWasted: Math.round(avgWasted * 100) / 100,
+        wasteRisk: Math.round(wasteRisk * 1000) / 1000,
+        confidence: 'Medium',
+        frequency: itemStats.count
+      };
+    })
+    .sort((a, b) => b.frequency - a.frequency);
 
   return {
     method: 'Statistical Analysis',
     expectedDiners,
     recommendedFoodQuantity,
+    wasteRiskScore,
     peakDayPrediction: peakDay.day,
     confidence: Math.round(confidence),
     avgDailyConsumption: Math.round(avgDailyConsumption),
-    tomorrowPrediction: Math.round(avgForTomorrowDay),
+    tomorrowPrediction: Math.round(avgForTargetDay),
+    forDate: predictionDate.toISOString().split('T')[0],
     foodItemPredictions,
     dataPoints: logs.length,
     analysis: {
       totalDaysAnalyzed: Object.keys(dailyStats).length,
-      avgWastePercentage: calculateAvgWastePercentage(dailyStats)
+      avgWastePercentage
     },
     aiEnabled: false
   };
 }
 
 // @desc    Predict demand for next day (AI + Statistical fallback)
-exports.predictDemand = async () => {
+exports.predictDemand = async (dateInput) => {
   try {
+    const targetDate = parseTargetDate(dateInput);
+
     // Get data from the last 30 days
-    const thirtyDaysAgo = new Date();
+    const now = new Date();
+    const thirtyDaysAgo = new Date(now);
     thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
 
-    const logs = await FoodLog.find({
+    let logs = await FoodLog.find({
       date: { $gte: thirtyDaysAgo }
     }).sort({ date: -1 });
+
+    // If synthetic/demo data is older than 30 days, use the latest available 30-day window.
+    if (logs.length === 0) {
+      const latestLog = await FoodLog.findOne().sort({ date: -1 });
+
+      if (latestLog) {
+        const latestDate = new Date(latestLog.date);
+        const fallbackStart = new Date(latestDate);
+        fallbackStart.setDate(fallbackStart.getDate() - 30);
+
+        logs = await FoodLog.find({
+          date: { $gte: fallbackStart, $lte: latestDate }
+        }).sort({ date: -1 });
+      }
+    }
 
     if (logs.length === 0) {
       return {
@@ -237,23 +276,25 @@ exports.predictDemand = async () => {
         peakDayPrediction: 'No data available',
         confidence: 0,
         message: 'Insufficient data for prediction',
+        forDate: targetDate.toISOString().split('T')[0],
         aiEnabled: false
       };
     }
 
     // Try AI model first if enabled
     if (USE_AI_MODEL) {
-      const itemsData = formatDataForAI(logs);
+      const itemsData = formatDataForAI(logs, targetDate);
       const aiPrediction = await callAIModel(itemsData);
       
       if (aiPrediction) {
+        aiPrediction.forDate = targetDate.toISOString().split('T')[0];
         return aiPrediction;
       }
     }
 
     // Fallback to statistical method
     console.log('📊 Using statistical prediction method');
-    return await statisticalPrediction(logs);
+    return await statisticalPrediction(logs, targetDate);
 
   } catch (error) {
     console.error('Prediction error:', error);
@@ -280,7 +321,7 @@ exports.getWeeklyTrends = async () => {
     const sevenDaysAgo = new Date();
     sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
 
-    const weeklyData = await FoodLog.aggregate([
+    let weeklyData = await FoodLog.aggregate([
       { $match: { date: { $gte: sevenDaysAgo } } },
       {
         $group: {
@@ -294,6 +335,31 @@ exports.getWeeklyTrends = async () => {
       },
       { $sort: { _id: 1 } }
     ]);
+
+    if (weeklyData.length === 0) {
+      const latestLog = await FoodLog.findOne().sort({ date: -1 });
+
+      if (latestLog) {
+        const latestDate = new Date(latestLog.date);
+        const fallbackStart = new Date(latestDate);
+        fallbackStart.setDate(fallbackStart.getDate() - 30);
+
+        weeklyData = await FoodLog.aggregate([
+          { $match: { date: { $gte: fallbackStart, $lte: latestDate } } },
+          {
+            $group: {
+              _id: {
+                $dateToString: { format: '%Y-%m-%d', date: '$date' }
+              },
+              totalConsumed: { $sum: '$consumedQty' },
+              totalPrepared: { $sum: '$preparedQty' },
+              totalWasted: { $sum: '$wastedQty' }
+            }
+          },
+          { $sort: { _id: 1 } }
+        ]);
+      }
+    }
 
     return weeklyData;
   } catch (error) {

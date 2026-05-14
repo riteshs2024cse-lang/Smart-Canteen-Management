@@ -9,7 +9,9 @@ import {
   CalendarCheck2,
   Menu,
   X,
-  LogOut
+  LogOut,
+  Sun,
+  Moon
 } from 'lucide-react';
 import Dashboard from './pages/Dashboard';
 import FoodLogs from './pages/FoodLogs';
@@ -41,7 +43,7 @@ function RequireAuth({ roles, children }) {
   return children;
 }
 
-function AdminLayout() {
+function AdminLayout({ theme, onToggleTheme }) {
   const [sidebarOpen, setSidebarOpen] = useState(true);
 
   useEffect(() => {
@@ -81,6 +83,16 @@ function AdminLayout() {
           </div>
         </div>
         <div className="header-right">
+          <button
+            type="button"
+            className="theme-toggle"
+            onClick={onToggleTheme}
+            aria-label={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+            title={`Switch to ${theme === 'light' ? 'dark' : 'light'} theme`}
+          >
+            {theme === 'light' ? <Moon size={18} /> : <Sun size={18} />}
+            <span>{theme === 'light' ? 'Dark' : 'Light'}</span>
+          </button>
           <div className="ai-badge">
             <BrainCircuit size={20} />
             <span>AI Powered</span>
@@ -134,6 +146,17 @@ function AdminLayout() {
 }
 
 function App() {
+  const [theme, setTheme] = useState(() => localStorage.getItem('theme') || 'light');
+
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+    localStorage.setItem('theme', theme);
+  }, [theme]);
+
+  const toggleTheme = () => {
+    setTheme((prev) => (prev === 'light' ? 'dark' : 'light'));
+  };
+
   return (
     <Router>
       <Routes>
@@ -151,7 +174,7 @@ function App() {
           path="/*"
           element={(
             <RequireAuth roles={['admin']}>
-              <AdminLayout />
+              <AdminLayout theme={theme} onToggleTheme={toggleTheme} />
             </RequireAuth>
           )}
         />

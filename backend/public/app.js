@@ -165,8 +165,14 @@ async function loadDashboardData() {
         const todayStr = '2026-03-12';
         
         // Load dashboard stats for today only
-        const response = await fetch(`${API_BASE}/dashboard?startDate=${todayStr}&endDate=${todayStr}`);
+        const response = await fetch(`${API_BASE}/dashboard?startDate=${todayStr}&endDate=${todayStr}`, {
+            headers: getAuthHeaders()
+        });
         const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to load dashboard data');
+        }
         
         if (result.success && result.data && result.data.summary) {
             updateDashboardStats(result.data.summary);
@@ -205,8 +211,14 @@ function updateDashboardStats(data) {
 
 async function loadHistoricalData() {
     try {
-        const response = await fetch(`${API_BASE}/food-log?limit=100`);
+        const response = await fetch(`${API_BASE}/food-log?limit=100`, {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to load historical data');
+        }
         
         const tbody = document.getElementById('historicalDataBody');
         
@@ -256,8 +268,14 @@ async function loadHistoricalData() {
 
 async function loadDashboardCharts() {
     try {
-        const response = await fetch(`${API_BASE}/food-log?limit=30`);
+        const response = await fetch(`${API_BASE}/food-log?limit=30`, {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to load chart data');
+        }
         
         if (data.success && data.data.length > 0) {
             createConsumptionWasteChart(data.data);
@@ -402,8 +420,14 @@ async function loadFoodLogs() {
             url += '?' + params.toString();
         }
         
-        const response = await fetch(url);
+        const response = await fetch(url, {
+            headers: getAuthHeaders()
+        });
         const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data.error || 'Failed to load food logs');
+        }
         
         const tbody = document.getElementById('foodLogsBody');
         
@@ -504,9 +528,9 @@ function initFormHandlers() {
             try {
                 const response = await fetch(`${API_BASE}/food-log`, {
                     method: 'POST',
-                    headers: {
+                    headers: getAuthHeaders({
                         'Content-Type': 'application/json'
-                    },
+                    }),
                     body: JSON.stringify(logData)
                 });
                 
@@ -555,14 +579,24 @@ function initFormHandlers() {
 // Predictions Functions
 async function loadPredictions() {
     try {
-        const response = await fetch(`${API_BASE}/predict-demand`);
+        const response = await fetch(`${API_BASE}/predict-demand`, {
+            headers: getAuthHeaders()
+        });
         const result = await response.json();
+
+        if (!response.ok) {
+            throw new Error(result.error || 'Failed to load predictions');
+        }
+
         const data = result.data || result;
         
         // Update summary cards
         document.getElementById('expectedDiners').textContent = data.expectedDiners || '-';
         document.getElementById('recommendedQty').textContent = data.recommendedFoodQuantity ? `${data.recommendedFoodQuantity} kg` : '-';
-        document.getElementById('wasteRisk').textContent = data.wasteRiskScore ? `${(data.wasteRiskScore * 100).toFixed(0)}%` : '-';
+        document.getElementById('wasteRisk').textContent =
+            data.wasteRiskScore !== undefined && data.wasteRiskScore !== null
+                ? `${(data.wasteRiskScore * 100).toFixed(0)}%`
+                : '-';
         document.getElementById('aiConfidence').textContent = data.confidence ? `${data.confidence}%` : 'High';
         
         // Display food item predictions
@@ -761,7 +795,9 @@ async function adminCancelBooking(bookingId) {
 // Booking Settings Functions
 async function loadBookingSettings() {
     try {
-        const response = await fetch(`${API_BASE}/booking-settings`);
+        const response = await fetch(`${API_BASE}/booking-settings`, {
+            headers: getAuthHeaders()
+        });
         const result = await response.json();
 
         if (result.success) {
@@ -793,9 +829,9 @@ async function handleBookingToggle(event) {
     try {
         const response = await fetch(`${API_BASE}/booking-settings/toggle`, {
             method: 'POST',
-            headers: {
+            headers: getAuthHeaders({
                 'Content-Type': 'application/json'
-            }
+            })
         });
         
         const result = await response.json();

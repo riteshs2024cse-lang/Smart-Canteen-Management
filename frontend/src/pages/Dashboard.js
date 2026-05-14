@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { 
   Utensils, 
   TrendingDown, 
@@ -11,30 +11,83 @@ import {
 } from 'lucide-react';
 import { AreaChart, Area, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { dashboardAPI } from '../services/api';
+import { buildChronologicalTrends, normalizeFoodBreakdown, toSafeNumber } from '../utils/chartUtils';
 import './Dashboard.css';
 
+const DASHBOARD_CACHE_KEY = 'smart_canteen_dashboard_cache';
+
 function Dashboard() {
-  const [stats, setStats] = useState(null);
-  const [loading, setLoading] = useState(true);
+  const cachedStats = useMemo(() => {
+    try {
+      const raw = localStorage.getItem(DASHBOARD_CACHE_KEY);
+      return raw ? JSON.parse(raw) : null;
+    } catch {
+      return null;
+    }
+  }, []);
+
+  const [stats, setStats] = useState(cachedStats?.data || null);
+  const [loading, setLoading] = useState(!cachedStats?.data);
   const [error, setError] = useState(null);
+  const [syncNotice, setSyncNotice] = useState(null);
 
   useEffect(() => {
     fetchDashboardData();
   }, []);
 
-  const fetchDashboardData = async () => {
+  const fetchDashboardData = async (attempt = 0) => {
     try {
-      setLoading(true);
+      if (!stats) {
+        setLoading(true);
+      }
+
       const data = await dashboardAPI.getStats();
-      setStats(data.data);
+      const nextStats = data.data;
+
+      setStats(nextStats);
       setError(null);
+      setSyncNotice(null);
+      localStorage.setItem(DASHBOARD_CACHE_KEY, JSON.stringify({
+        data: nextStats,
+        updatedAt: new Date().toISOString()
+      }));
     } catch (err) {
-      setError('Failed to load dashboard data');
+      const status = err?.status || err?.response?.status;
+
+      if (status === 401 || status === 403) {
+        window.location.href = '/admin/login';
+        return;
+      }
+
       console.error(err);
+
+      if (attempt < 2) {
+        await new Promise((resolve) => setTimeout(resolve, 600 * (attempt + 1)));
+        return fetchDashboardData(attempt + 1);
+      }
+
+      if (cachedStats?.data) {
+        setStats(cachedStats.data);
+        setError(null);
+        setSyncNotice('Showing cached dashboard data. Live refresh will keep retrying in the background.');
+      } else {
+        setError('Failed to load dashboard data');
+      }
     } finally {
       setLoading(false);
     }
   };
+
+  useEffect(() => {
+    const handleFocus = () => {
+      if (error) {
+        fetchDashboardData();
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [error, cachedStats?.data, stats]);
 
   if (loading) {
     return (
@@ -62,18 +115,14 @@ function Dashboard() {
   const dailyTrends = stats?.dailyTrends || [];
 
   // Prepare chart data
-  const wasteData = foodItemBreakdown.map(item => ({
-    name: item.foodItem,
-    wasted: item.totalWasted,
-    consumed: item.totalConsumed
+  const normalizedItems = normalizeFoodBreakdown(foodItemBreakdown);
+  const wasteData = normalizedItems.map((item) => ({
+    name: item.name,
+    wasted: item.wasted,
+    consumed: item.consumed
   }));
 
-  const trendData = dailyTrends.slice(0, 7).reverse().map(trend => ({
-    date: new Date(trend.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-    prepared: trend.totalPrepared,
-    consumed: trend.totalConsumed,
-    wasted: trend.totalWasted
-  }));
+  const trendData = buildChronologicalTrends(dailyTrends, { limit: 7 });
 
   return (
     <div className="dashboard fade-in">
@@ -89,12 +138,19 @@ function Dashboard() {
         </button>
       </div>
 
+      {syncNotice && (
+        <div className="closed-banner" style={{ marginBottom: '1rem' }}>
+          <AlertCircle size={18} />
+          <span>{syncNotice}</span>
+        </div>
+      )}
+
       {/* Stats Grid */}
       <div className="stats-grid">
         <div className="stats-card">
           <div className="stats-card-header">
             <div>
-              <div className="stats-value">{summary.totalPrepared || 0}</div>
+              <div className="stats-value">{toSafeNumber(summary.totalPrepared)} portions</div>
               <div className="stats-label">Total Prepared</div>
             </div>
             <div className="stats-icon">
@@ -103,14 +159,14 @@ function Dashboard() {
           </div>
           <div className="stats-trend positive">
             <TrendingUp size={16} />
-            <span>{summary.logsCount || 0} total logs</span>
+              <span>{toSafeNumber(summary.logsCount)} total logs</span>
           </div>
         </div>
 
         <div className="stats-card">
           <div className="stats-card-header">
             <div>
-              <div className="stats-value">{summary.totalConsumed || 0}</div>
+              <div className="stats-value">{toSafeNumber(summary.totalConsumed)} portions</div>
               <div className="stats-label">Total Consumed</div>
             </div>
             <div className="stats-icon" style={{ background: 'linear-gradient(135deg, #059669 0%, #047857 100%)' }}>
@@ -119,14 +175,14 @@ function Dashboard() {
           </div>
           <div className="stats-trend positive">
             <TrendingUp size={16} />
-            <span>{((summary.totalConsumed / summary.totalPrepared) * 100 || 0).toFixed(1)}% efficiency</span>
+              <span>{((toSafeNumber(summary.totalConsumed) / toSafeNumber(summary.totalPrepared)) * 100 || 0).toFixed(1)}% efficiency</span>
           </div>
         </div>
 
         <div className="stats-card">
           <div className="stats-card-header">
             <div>
-              <div className="stats-value">{summary.totalWasted || 0}</div>
+              <div className="stats-value">{toSafeNumber(summary.totalWasted)} portions</div>
               <div className="stats-label">Total Wasted</div>
             </div>
             <div className="stats-icon" style={{ background: 'linear-gradient(135deg, #ef4444 0%, #dc2626 100%)' }}>
@@ -135,14 +191,14 @@ function Dashboard() {
           </div>
           <div className="stats-trend negative">
             <TrendingDown size={16} />
-            <span>{(summary.wastePercentage || 0).toFixed(1)}% waste</span>
+              <span>{toSafeNumber(summary.wastePercentage).toFixed(1)}% waste</span>
           </div>
         </div>
 
         <div className="stats-card">
           <div className="stats-card-header">
             <div>
-              <div className="stats-value">{(100 - (summary.wastePercentage || 0)).toFixed(1)}%</div>
+              <div className="stats-value">{(100 - toSafeNumber(summary.wastePercentage)).toFixed(1)}%</div>
               <div className="stats-label">Eco Score</div>
             </div>
             <div className="stats-icon" style={{ background: 'linear-gradient(135deg, #22c55e 0%, #16a34a 100%)' }}>
@@ -190,8 +246,8 @@ function Dashboard() {
                 }} 
               />
               <Legend />
-              <Area type="monotone" dataKey="prepared" stroke="#10b981" fillOpacity={1} fill="url(#colorPrepared)" name="Prepared" />
-              <Area type="monotone" dataKey="consumed" stroke="#059669" fillOpacity={1} fill="url(#colorConsumed)" name="Consumed" />
+              <Area type="monotone" dataKey="prepared" stroke="#10b981" fillOpacity={1} fill="url(#colorPrepared)" name="Prepared (portions)" />
+              <Area type="monotone" dataKey="consumed" stroke="#059669" fillOpacity={1} fill="url(#colorConsumed)" name="Consumed (portions)" />
             </AreaChart>
           </ResponsiveContainer>
         </div>
@@ -218,8 +274,8 @@ function Dashboard() {
                 }} 
               />
               <Legend />
-              <Bar dataKey="consumed" fill="#10b981" name="Consumed" radius={[8, 8, 0, 0]} />
-              <Bar dataKey="wasted" fill="#ef4444" name="Wasted" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="consumed" fill="#10b981" name="Consumed (portions)" radius={[8, 8, 0, 0]} />
+              <Bar dataKey="wasted" fill="#ef4444" name="Wasted (portions)" radius={[8, 8, 0, 0]} />
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -235,9 +291,9 @@ function Dashboard() {
             <thead>
               <tr>
                 <th>Food Item</th>
-                <th>Prepared</th>
-                <th>Consumed</th>
-                <th>Wasted</th>
+                <th>Prepared (portions)</th>
+                <th>Consumed (portions)</th>
+                <th>Wasted (portions)</th>
                 <th>Waste %</th>
                 <th>Status</th>
               </tr>
@@ -246,9 +302,9 @@ function Dashboard() {
               {foodItemBreakdown.map((item, index) => (
                 <tr key={index}>
                   <td className="font-semibold">{item.foodItem}</td>
-                  <td>{item.totalPrepared}</td>
-                  <td className="text-green">{item.totalConsumed}</td>
-                  <td className="text-red">{item.totalWasted}</td>
+                  <td>{item.totalPrepared} portions</td>
+                  <td className="text-green">{item.totalConsumed} portions</td>
+                  <td className="text-red">{item.totalWasted} portions</td>
                   <td>{item.wastePercentage.toFixed(1)}%</td>
                   <td>
                     <span className={`badge ${item.wastePercentage < 10 ? 'badge-success' : item.wastePercentage < 20 ? 'badge-warning' : 'badge-danger'}`}>

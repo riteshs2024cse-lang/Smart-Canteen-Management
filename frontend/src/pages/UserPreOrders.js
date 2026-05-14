@@ -17,6 +17,17 @@ const MEAL_OPTIONS = [
   { label: 'Dinner', value: 'dinner' }
 ];
 
+const AVAILABLE_ITEMS = [
+  { name: 'Poha', mealTypes: ['breakfast'], description: 'Light and quick breakfast' },
+  { name: 'Idli', mealTypes: ['breakfast'], description: 'Steamed rice cakes' },
+  { name: 'Dosa', mealTypes: ['breakfast'], description: 'Crispy fermented crepe' },
+  { name: 'Rice', mealTypes: ['lunch', 'dinner'], description: 'Plain steamed rice' },
+  { name: 'Dal', mealTypes: ['lunch', 'dinner'], description: 'Protein-rich lentil curry' },
+  { name: 'Chapati', mealTypes: ['lunch', 'dinner'], description: 'Whole wheat flatbread' },
+  { name: 'Sabzi', mealTypes: ['lunch', 'dinner'], description: 'Seasonal vegetable curry' },
+  { name: 'Sambar', mealTypes: ['breakfast', 'lunch', 'dinner'], description: 'South Indian stew' }
+];
+
 function UserPreOrders() {
   const auth = getAuth();
   const user = auth?.user;
@@ -27,7 +38,7 @@ function UserPreOrders() {
   const [bookingForm, setBookingForm] = useState({
     bookingDate: new Date().toISOString().split('T')[0],
     mealType: 'lunch',
-    foodItemsText: '',
+    selectedItems: {},
     specialRequests: ''
   });
 
@@ -37,6 +48,9 @@ function UserPreOrders() {
 
   const isBookingOpen = settings?.isBookingEnabled ?? true;
   const closureMessage = useMemo(() => settings?.closureMessage || 'Pre-ordering is currently closed.', [settings]);
+  const availableItems = useMemo(() => {
+    return AVAILABLE_ITEMS.filter((item) => item.mealTypes.includes(bookingForm.mealType));
+  }, [bookingForm.mealType]);
 
   const loadData = async () => {
     try {
@@ -56,25 +70,64 @@ function UserPreOrders() {
     }
   };
 
-  const parseFoodItems = (text) => {
-    return text
-      .split(',')
-      .map((item) => item.trim())
-      .filter(Boolean)
-      .map((name) => ({ name, quantity: 1 }));
-  };
-
   const onBookingInputChange = (event) => {
     const { name, value } = event.target;
+    if (name === 'mealType') {
+      setBookingForm((prev) => ({
+        ...prev,
+        mealType: value,
+        selectedItems: {}
+      }));
+      return;
+    }
+
     setBookingForm((prev) => ({ ...prev, [name]: value }));
+  };
+
+  const toggleItem = (itemName, checked) => {
+    setBookingForm((prev) => {
+      const nextSelectedItems = { ...prev.selectedItems };
+
+      if (checked) {
+        nextSelectedItems[itemName] = nextSelectedItems[itemName] || { quantity: 1 };
+      } else {
+        delete nextSelectedItems[itemName];
+      }
+
+      return {
+        ...prev,
+        selectedItems: nextSelectedItems
+      };
+    });
+  };
+
+  const changeItemQuantity = (itemName, quantity) => {
+    const safeQuantity = Math.max(1, Number(quantity) || 1);
+
+    setBookingForm((prev) => ({
+      ...prev,
+      selectedItems: {
+        ...prev.selectedItems,
+        [itemName]: {
+          ...(prev.selectedItems[itemName] || {}),
+          quantity: safeQuantity
+        }
+      }
+    }));
   };
 
   const handleCreateBooking = async (event) => {
     event.preventDefault();
 
-    const foodItems = parseFoodItems(bookingForm.foodItemsText);
+    const foodItems = Object.entries(bookingForm.selectedItems)
+      .map(([name, item]) => ({
+        name,
+        quantity: Math.max(1, Number(item.quantity) || 1)
+      }))
+      .filter((item) => item.quantity > 0);
+
     if (!bookingForm.bookingDate || !bookingForm.mealType || foodItems.length === 0) {
-      alert('Please fill all required fields and provide at least one food item.');
+      alert('Please fill all required fields and select at least one available food item.');
       return;
     }
 
@@ -86,7 +139,11 @@ function UserPreOrders() {
         foodItems
       });
 
-      setBookingForm((prev) => ({ ...prev, foodItemsText: '', specialRequests: '' }));
+      setBookingForm((prev) => ({
+        ...prev,
+        selectedItems: {},
+        specialRequests: ''
+      }));
       await loadData();
       alert('Pre-order created successfully.');
     } catch (err) {
@@ -196,16 +253,63 @@ function UserPreOrders() {
                 ))}
               </select>
             </label>
-            <label>
-              Food Items *
-              <input
-                name="foodItemsText"
-                value={bookingForm.foodItemsText}
-                onChange={onBookingInputChange}
-                placeholder="Comma separated: Idli, Sambar, Fruit"
-                required
-              />
-            </label>
+            <div className="available-items-section">
+              <div className="section-copy">
+                <label>Available Items *</label>
+                <p className="helper-text">Pick from the items served for the selected meal and adjust quantities.</p>
+              </div>
+
+              <div className="available-items-grid">
+                {availableItems.map((item) => {
+                  const isSelected = Boolean(bookingForm.selectedItems[item.name]);
+                  const quantity = bookingForm.selectedItems[item.name]?.quantity || 1;
+
+                  return (
+                    <div className={`available-item-card ${isSelected ? 'selected' : ''}`} key={item.name}>
+                      <label className="available-item-toggle">
+                        <input
+                          type="checkbox"
+                          checked={isSelected}
+                          onChange={(e) => toggleItem(item.name, e.target.checked)}
+                        />
+                        <span>
+                          <strong>{item.name}</strong>
+                          <small>{item.description}</small>
+                        </span>
+                      </label>
+
+                      <div className="available-item-actions">
+                        <label>
+                          Quantity
+                          <input
+                            type="number"
+                            min="1"
+                            value={quantity}
+                            disabled={!isSelected}
+                            onChange={(e) => changeItemQuantity(item.name, e.target.value)}
+                          />
+                        </label>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+
+              <div className="selection-summary">
+                <span className="helper-text">Selected items:</span>
+                <div className="selection-chip-list">
+                  {Object.keys(bookingForm.selectedItems).length > 0 ? (
+                    Object.entries(bookingForm.selectedItems).map(([name, item]) => (
+                      <span className="selection-chip" key={name}>
+                        {name} x{Math.max(1, Number(item.quantity) || 1)}
+                      </span>
+                    ))
+                  ) : (
+                    <span className="selection-empty">No items selected yet.</span>
+                  )}
+                </div>
+              </div>
+            </div>
             <label>
               Special Request
               <textarea

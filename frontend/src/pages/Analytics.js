@@ -23,6 +23,7 @@ import {
   ResponsiveContainer 
 } from 'recharts';
 import { dashboardAPI } from '../services/api';
+import { buildChronologicalTrends, normalizeFoodBreakdown, getWastePercent, toSafeNumber } from '../utils/chartUtils';
 import './Analytics.css';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
@@ -51,14 +52,11 @@ function Analytics() {
       const statsDailyData = Array.isArray(statsRes?.data?.dailyTrends) ? statsRes.data.dailyTrends : [];
       const sourceTrends = weeklyData.length > 0 ? weeklyData : statsDailyData;
 
-      const trendData = sourceTrends.map(trend => ({
-        date: new Date(trend.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        prepared: trend.totalPrepared,
-        consumed: trend.totalConsumed,
-        wasted: trend.totalWasted,
-        wastePercent: trend.totalPrepared > 0 ? ((trend.totalWasted / trend.totalPrepared) * 100).toFixed(1) : '0.0'
+      const trendData = buildChronologicalTrends(sourceTrends).map((trend) => ({
+        ...trend,
+        wastePercent: getWastePercent(trend.prepared, trend.wasted)
       }));
-      setWeeklyTrends(trendData.reverse());
+      setWeeklyTrends(trendData);
     } catch (err) {
       console.error('Failed to fetch analytics:', err);
     } finally {
@@ -88,20 +86,21 @@ function Analytics() {
   }
 
   // Prepare chart data
-  const wasteByItem = (wasteAnalysis || []).map(item => ({
-    name: item.foodItem || 'Unknown',
-    wasted: item.totalWasted || 0,
-    consumed: item.totalConsumed || 0,
-    prepared: item.totalPrepared || 0
+  const normalizedWaste = normalizeFoodBreakdown(wasteAnalysis);
+  const wasteByItem = normalizedWaste.map((item) => ({
+    name: item.name,
+    wasted: item.wasted,
+    consumed: item.consumed,
+    prepared: item.prepared
   }));
 
-  const wastePieData = (wasteAnalysis || []).map(item => ({
-    name: item.foodItem || 'Unknown',
-    value: item.totalWasted || 0
+  const wastePieData = normalizedWaste.map((item) => ({
+    name: item.name,
+    value: item.wasted
   }));
 
-  const totalWaste = wasteAnalysis.reduce((sum, item) => sum + (item.totalWasted || 0), 0);
-  const totalPrepared = wasteAnalysis.reduce((sum, item) => sum + (item.totalPrepared || 0), 0);
+  const totalWaste = normalizedWaste.reduce((sum, item) => sum + item.wasted, 0);
+  const totalPrepared = normalizedWaste.reduce((sum, item) => sum + item.prepared, 0);
   const avgWastePercent = totalPrepared > 0 ? (totalWaste / totalPrepared * 100).toFixed(1) : '0.0';
 
   return (
@@ -329,8 +328,7 @@ function Analytics() {
             </thead>
             <tbody>
               {(wasteAnalysis || []).map((item, index) => {
-                const wastePercentage = item.wastePercentage || 
-                  (item.totalPrepared > 0 ? (item.totalWasted / item.totalPrepared * 100) : 0);
+                const wastePercentage = toSafeNumber(item.wastePercentage) || getWastePercent(item.totalPrepared, item.totalWasted);
                 return (
                   <tr key={index}>
                     <td className="font-semibold">{item.foodItem || 'Unknown'}</td>

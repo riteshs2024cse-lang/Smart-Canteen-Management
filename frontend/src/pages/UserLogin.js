@@ -24,6 +24,8 @@ function UserLogin() {
   const [error, setError] = useState('');
   const [info, setInfo] = useState('');
   const [devOtp, setDevOtp] = useState('');
+  const [showLoginPassword, setShowLoginPassword] = useState(false);
+  const [showResetPassword, setShowResetPassword] = useState(false);
 
   const onChange = (event) => {
     const { name, value } = event.target;
@@ -146,7 +148,23 @@ function UserLogin() {
                   </label>
                   <label>
                     New Password
-                    <input type="password" name="newPassword" value={resetForm.newPassword} onChange={(e) => setResetForm((prev) => ({ ...prev, newPassword: e.target.value }))} required />
+                    <div className="password-field">
+                      <input
+                        type={showResetPassword ? 'text' : 'password'}
+                        name="newPassword"
+                        value={resetForm.newPassword}
+                        onChange={(e) => setResetForm((prev) => ({ ...prev, newPassword: e.target.value }))}
+                        required
+                      />
+                      <button
+                        type="button"
+                        className="password-toggle"
+                        onClick={() => setShowResetPassword((prev) => !prev)}
+                        aria-label={showResetPassword ? 'Hide password' : 'Show password'}
+                      >
+                        {showResetPassword ? 'Hide' : 'Show'}
+                      </button>
+                    </div>
                   </label>
                 </>
               )}
@@ -163,7 +181,23 @@ function UserLogin() {
           {mode !== 'forgot' && (
             <label>
               Password
-              <input type="password" name="password" value={form.password} onChange={onChange} required />
+              <div className="password-field">
+                <input
+                  type={showLoginPassword ? 'text' : 'password'}
+                  name="password"
+                  value={form.password}
+                  onChange={onChange}
+                  required
+                />
+                <button
+                  type="button"
+                  className="password-toggle"
+                  onClick={() => setShowLoginPassword((prev) => !prev)}
+                  aria-label={showLoginPassword ? 'Hide password' : 'Show password'}
+                >
+                  {showLoginPassword ? 'Hide' : 'Show'}
+                </button>
+              </div>
             </label>
           )}
 

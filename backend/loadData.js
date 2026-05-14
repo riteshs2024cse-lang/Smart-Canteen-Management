@@ -21,7 +21,7 @@ const connectDB = async () => {
 // Parse CSV and load into MongoDB
 async function loadDataFromCSV() {
     try {
-        const csvPath = path.join(__dirname, '../AI-model/data/food_logs.csv');
+        const csvPath = path.join(__dirname, '../data/food_logs.csv');
         const csvData = fs.readFileSync(csvPath, 'utf-8');
         
         const lines = csvData.split('\n');

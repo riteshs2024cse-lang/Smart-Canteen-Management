@@ -12,6 +12,7 @@ import {
 } from 'lucide-react';
 import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer } from 'recharts';
 import { predictionAPI, dashboardAPI } from '../services/api';
+import { buildChronologicalTrends, toSafeNumber } from '../utils/chartUtils';
 import './Predictions.css';
 
 function Predictions() {
@@ -43,13 +44,8 @@ function Predictions() {
       const statsDailyData = Array.isArray(statsRes?.data?.dailyTrends) ? statsRes.data.dailyTrends : [];
       const sourceTrends = weeklyData.length > 0 ? weeklyData : statsDailyData;
 
-      const trendData = sourceTrends.map(trend => ({
-        date: new Date(trend.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }),
-        prepared: trend.totalPrepared,
-        consumed: trend.totalConsumed,
-        wasted: trend.totalWasted
-      }));
-      setWeeklyTrends(trendData.reverse());
+      const trendData = buildChronologicalTrends(sourceTrends, { limit: 7 });
+      setWeeklyTrends(trendData);
     } catch (err) {
       console.error('Failed to fetch trends:', err);
     }
@@ -180,7 +176,7 @@ function Predictions() {
             <div className="summary-content">
               <div className="summary-label">Expected Diners</div>
               <div className="summary-value">
-                {Math.round(predictions?.expectedDiners || 0)}
+                {Math.round(toSafeNumber(predictions?.expectedDiners))}
               </div>
             </div>
           </div>
@@ -192,7 +188,7 @@ function Predictions() {
             <div className="summary-content">
               <div className="summary-label">Total Recommended</div>
               <div className="summary-value">
-                {aiPredictions.reduce((sum, p) => sum + p.recommendedQty, 0).toFixed(0)} kg
+                {aiPredictions.reduce((sum, p) => sum + toSafeNumber(p.recommendedQty), 0).toFixed(0)} kg
               </div>
             </div>
           </div>
@@ -302,43 +298,6 @@ function Predictions() {
         </ResponsiveContainer>
       </div>
 
-      {/* Recommendations */}
-      {isPredictionAvailable && (
-        <div className="recommendations-card">
-          <h3>
-            <Sparkles size={20} />
-            AI Recommendations
-          </h3>
-          <ul>
-            {aiPredictions.filter(p => normalizeRiskLabel(p.wasteRisk) === 'High').length > 0 && (
-              <li className="recommendation-warning">
-                <AlertTriangle size={16} />
-                <span>
-                  {aiPredictions.filter(p => normalizeRiskLabel(p.wasteRisk) === 'High').length} item(s) with high waste risk. 
-                  Consider reducing preparation quantities.
-                </span>
-              </li>
-            )}
-            {aiPredictions.filter(p => normalizeRiskLabel(p.wasteRisk) === 'Low').length > 0 && (
-              <li className="recommendation-success">
-                <CheckCircle size={16} />
-                <span>
-                  {aiPredictions.filter(p => normalizeRiskLabel(p.wasteRisk) === 'Low').length} item(s) showing optimal performance. 
-                  Continue current preparation levels.
-                </span>
-              </li>
-            )}
-            <li className="recommendation-info">
-              <TrendingUp size={16} />
-              <span>
-                Predictions based on {predictions?.daysOfData || 0} days of historical data with {
-                  ((predictions?.modelInfo?.accuracy || 0) * 100).toFixed(0)
-                }% accuracy.
-              </span>
-            </li>
-          </ul>
-        </div>
-      )}
     </div>
   );
 }
