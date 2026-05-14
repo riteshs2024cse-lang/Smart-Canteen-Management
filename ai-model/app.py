@@ -1,9 +1,3 @@
-"""
-Smart Canteen Management System - Flask API Server
-This Flask application provides REST API endpoints for AI-powered demand prediction.
-It can be called from the Node.js backend to get intelligent food demand forecasts.
-"""
-
 from flask import Flask, request, jsonify
 from flask_cors import CORS
 import pandas as pd
@@ -16,13 +10,27 @@ app = Flask(__name__)
 CORS(app)  # Enable CORS for Node.js backend integration
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-# Initialize the predictor
-try:
-    predictor = DemandPredictor(model_path=os.path.join(BASE_DIR, 'models', 'demand_model.pkl'))
-    print("✅ Demand predictor initialized successfully")
-except Exception as e:
-    print(f"⚠️  Warning: Could not load model - {str(e)}")
-    print("   Please run 'python train_model.py' first")
+# Initialize the predictor: try local ai-model/models first, then fallback to shared data/models
+def find_model_path():
+    candidates = [
+        os.path.join(BASE_DIR, 'models', 'demand_model.pkl'),
+        os.path.join(BASE_DIR, '..', 'data', 'models', 'demand_model.pkl'),
+    ]
+    for p in candidates:
+        if os.path.exists(p):
+            return os.path.abspath(p)
+    return None
+
+model_file = find_model_path()
+if model_file:
+    try:
+        predictor = DemandPredictor(model_path=model_file)
+        print(f"✅ Demand predictor initialized successfully (model: {model_file})")
+    except Exception as e:
+        print(f"⚠️  Warning: Could not initialize predictor from {model_file} - {str(e)}")
+        predictor = None
+else:
+    print("⚠️  Warning: No model file found. Please run 'python train_model.py' or place model in ai-model/models or data/models")
     predictor = None
 
 
@@ -255,11 +263,18 @@ def model_info():
         }), 500
     
     try:
-        # Read model metadata
-        metadata_path = os.path.join(BASE_DIR, 'models', 'model_metadata.txt')
+        # Read model metadata (try ai-model/models then data/models)
+        metadata_candidates = [
+            os.path.join(BASE_DIR, 'models', 'model_metadata.txt'),
+            os.path.join(BASE_DIR, '..', 'data', 'models', 'model_metadata.txt')
+        ]
         metadata = {}
-        
-        if os.path.exists(metadata_path):
+        metadata_path = None
+        for mp in metadata_candidates:
+            if os.path.exists(mp):
+                metadata_path = mp
+                break
+        if metadata_path:
             with open(metadata_path, 'r') as f:
                 for line in f:
                     if ':' in line:

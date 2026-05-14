@@ -1,0 +1,6 @@
+Training Date: 2026-04-21 22:42:40
+Test MAE: 0.32
+Test RMSE: 1.18
+Test R²: 0.9993
+Features: 11
+Food Items: Curd Rice, Pulao, Sambar, Dosa, Sabzi, Idli, Paratha, Dal, Chapati, Poha, Rice, Upma

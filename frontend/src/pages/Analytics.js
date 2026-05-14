@@ -28,6 +28,19 @@ import './Analytics.css';
 
 const COLORS = ['#10b981', '#3b82f6', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
+// Generate a stable color from a string (food item name)
+function nameToColor(name) {
+  let hash = 0;
+  for (let i = 0; i < name.length; i++) {
+    hash = name.charCodeAt(i) + ((hash << 5) - hash);
+    hash = hash & hash; // Convert to 32bit integer
+  }
+  const hue = Math.abs(hash) % 360; // 0-359
+  const saturation = 65; // percent
+  const lightness = 55; // percent
+  return `hsl(${hue} ${saturation}% ${lightness}%)`;
+}
+
 function Analytics() {
   const [wasteAnalysis, setWasteAnalysis] = useState([]);
   const [weeklyTrends, setWeeklyTrends] = useState([]);
@@ -210,7 +223,7 @@ function Analytics() {
                 dataKey="value"
               >
                 {wastePieData.map((entry, index) => (
-                  <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                  <Cell key={`cell-${index}`} fill={nameToColor(entry.name)} />
                 ))}
               </Pie>
               <Tooltip 
