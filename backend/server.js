@@ -82,11 +82,8 @@ process.env.MONGO_URI
   process.exit(1);
 });
 
-const PORT = process.env.PORT || 5000;
+const PORT = process.env.PORT || 10000;
 
 app.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-  console.log(`📊 Dashboard API: http://localhost:${PORT}/api/dashboard`);
-  console.log(`🍽️  Food Log API: http://localhost:${PORT}/api/food-log`);
-  console.log(`🤖 Prediction API: http://localhost:${PORT}/api/predict-demand`);
+  console.log(`Server running on port ${PORT}`);
 });
